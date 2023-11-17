@@ -128,6 +128,20 @@ NS_ASSUME_NONNULL_BEGIN
  *                  amount of timeout in millisecond
  */
 + (void)setTrackingAuthorizeTimeout:(NSInteger)milliseconds;
+
+/**
+ * sdkSignatureSecret enable sdk signature feature that protect airbridge sdk from sdk spoofing
+ */
++ (void)setSDKSignatureSecretWithID:(NSString*)identifier
+                             secret:(NSString*)string;
+
+/**
+ * Set log level
+ * @param       level
+ *                  log level in NSUInteger
+ */
++ (void)setLogLevel:(NSUInteger)level;
+
 @end
 
 NS_ASSUME_NONNULL_END

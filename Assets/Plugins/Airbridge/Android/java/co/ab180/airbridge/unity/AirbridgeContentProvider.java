@@ -23,8 +23,13 @@ import co.ab180.airbridge.OnAttributionResultReceiveListener;
 
 public class AirbridgeContentProvider extends ContentProvider {
 
+    private static final String META_DATA_PREFIX = "airbridge==";
+    
     private static final String META_DATA_APP_NAME = "co.ab180.airbridge.sdk.app_name";
     private static final String META_DATA_APP_TOKEN = "co.ab180.airbridge.sdk.app_token";
+    private static final String META_DATA_SDK_SIGNATURE_SECRET_ID = "co.ab180.airbridge.sdk.sdk_signature_secret_id";
+    private static final String META_DATA_SDK_SIGNATURE_SECRET = "co.ab180.airbridge.sdk.sdk_signature_secret";
+    private static final String META_DATA_LOG_LEVEL = "co.ab180.airbridge.sdk.log_level";
     private static final String META_DATA_CUSTOM_DOMAIN = "co.ab180.airbridge.sdk.custom_domain";
     private static final String META_DATA_SESSION_TIMEOUT_SECONDS = "co.ab180.airbridge.sdk.session_timeout_seconds";
     private static final String META_DATA_USER_INFO_HASH_ENABLED = "co.ab180.airbridge.sdk.user_info_hash_enabled";
@@ -41,11 +46,24 @@ public class AirbridgeContentProvider extends ContentProvider {
             ApplicationInfo appInfo = pm.getApplicationInfo(app.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = appInfo.metaData;
 
-            String appName = bundle.getString(META_DATA_APP_NAME);
-            String appToken = bundle.getString(META_DATA_APP_TOKEN);
+            String appName = getActualString(bundle.getString(META_DATA_APP_NAME), META_DATA_PREFIX);
+            String appToken = getActualString(bundle.getString(META_DATA_APP_TOKEN), META_DATA_PREFIX);
 
             AirbridgeConfig.Builder builder = new AirbridgeConfig.Builder(appName, appToken);
             builder.setPlatform("unity");
+            
+             if (bundle.containsKey(META_DATA_SDK_SIGNATURE_SECRET_ID) && bundle.containsKey(META_DATA_SDK_SIGNATURE_SECRET)) {
+                 String sdkSignatureSecret = getActualString(bundle.getString(META_DATA_SDK_SIGNATURE_SECRET_ID, ""), META_DATA_PREFIX);
+                 String sdkSignatureSecretID = getActualString(bundle.getString(META_DATA_SDK_SIGNATURE_SECRET, ""), META_DATA_PREFIX);
+                 if (!sdkSignatureSecret.isEmpty() && !sdkSignatureSecretID.isEmpty()) {
+                    builder.setSDKSignatureSecret(sdkSignatureSecret, sdkSignatureSecretID);
+                 }
+             }
+             
+            if (bundle.containsKey(META_DATA_LOG_LEVEL)) {
+                int logLevel = bundle.getInt(META_DATA_LOG_LEVEL, 5);
+                builder.setLogLevel(logLevel);
+            }
 
             if (bundle.containsKey(META_DATA_CUSTOM_DOMAIN)) {
                 String customDomain = bundle.getString(META_DATA_CUSTOM_DOMAIN, "");
@@ -124,5 +142,20 @@ public class AirbridgeContentProvider extends ContentProvider {
     @Override
     public int update(@NotNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
+    }
+    
+    /**
+     * Fixes an issue where a string cannot be found when it consists of only numbers.
+     * @param str [prefix][actual string]
+     * @return [actual string]
+     */
+    private String getActualString(String str, String prefix) {
+        if (str != null && prefix != null) {
+            int index = str.indexOf(prefix);
+            if (index == 0) {
+                return str.substring(index + prefix.length());
+            }
+        }
+        return str;
     }
 }

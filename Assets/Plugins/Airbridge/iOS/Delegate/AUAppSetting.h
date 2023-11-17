@@ -3,6 +3,9 @@
 
 static NSString* appName = @"";
 static NSString* appToken = @"";
+static NSString* sdkSignatureSecretID = @"";
+static NSString* sdkSignatureSecret = @"";
+static NSUInteger logLevel = 3;
 static NSString* appScheme = @"";
 static NSInteger sessionTimeoutSeconds = 300;
 static BOOL autoStartTrackingEnabled = true;

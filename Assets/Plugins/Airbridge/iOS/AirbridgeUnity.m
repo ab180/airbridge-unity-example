@@ -98,4 +98,15 @@ static AirbridgeUnity* instance;
     AirBridge.setting.trackingAuthorizeTimeout = milliseconds;
 }
 
++ (void)setSDKSignatureSecretWithID:(NSString*)identifier
+                             secret:(NSString*)string {
+    if (identifier.length != 0 && string.length != 0) {
+        [AirBridge setSDKSignatureSecretWithID:identifier secret:string];
+    }
+}
+
++ (void)setLogLevel:(NSUInteger)level {
+    [AirBridge setLogLevel:(ABLogLevel)level];
+}
+
 @end

@@ -1,4 +1,4 @@
-﻿#if UNITY_IOS && !UNITY_EDITOR
+﻿#if UNITY_IOS && UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.iOS.Xcode;

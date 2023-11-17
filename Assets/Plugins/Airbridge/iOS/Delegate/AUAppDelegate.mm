@@ -47,6 +47,8 @@ static AUAppDelegate* shared = AUAppDelegate.instance;
     [AirbridgeUnity setIsTrackAirbridgeDeeplinkOnly:trackAirbridgeLinkOnly];
     [AirbridgeUnity setIsFacebookDeferredAppLinkEnabled:facebookDeferredAppLinkEnabled];
     [AirbridgeUnity setTrackingAuthorizeTimeout:trackingAuthorizeTimeoutSeconds * 1000];
+    [AirbridgeUnity setSDKSignatureSecretWithID:sdkSignatureSecretID secret:sdkSignatureSecret];
+    [AirbridgeUnity setLogLevel:logLevel];
 
     [AirbridgeUnity getInstance:appToken 
                         appName:appName 

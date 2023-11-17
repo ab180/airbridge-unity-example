@@ -31,6 +31,9 @@
         <meta-data android:name="co.ab180.airbridge.sdk.app_name" android:value="YOUR_APP_NAME" />
         <meta-data android:name="co.ab180.airbridge.sdk.app_token" android:value="YOUR_APP_TOKEN" />
         <!-- Optional -->
+        <meta-data android:name="co.ab180.airbridge.sdk.sdk_signature_secret_id" android:value="" />
+        <meta-data android:name="co.ab180.airbridge.sdk.sdk_signature_secret" android:value="" />
+        <meta-data android:name="co.ab180.airbridge.sdk.log_level" android:value="5" />
         <meta-data android:name="co.ab180.airbridge.sdk.session_timeout_seconds" android:value="300" />
         <meta-data android:name="co.ab180.airbridge.sdk.auto_start_user_tracking_enabled" android:value="true" />
         <meta-data android:name="co.ab180.airbridge.sdk.user_info_hash_enabled" android:value="true" />

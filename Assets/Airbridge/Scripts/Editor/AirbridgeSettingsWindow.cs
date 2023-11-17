@@ -18,10 +18,13 @@ public class AirbridgeSettingsWindow : EditorWindow
 
         SerializedProperty appNameProperty = serializedAirbridgeData.FindProperty("appName");
         EditorGUILayout.PropertyField(appNameProperty, new GUILayoutOption[] { });
-
+        
         SerializedProperty appTokenProperty = serializedAirbridgeData.FindProperty("appToken");
         EditorGUILayout.PropertyField(appTokenProperty, new GUILayoutOption[] { });
 
+        SerializedProperty logLevel = serializedAirbridgeData.FindProperty("logLevel");
+        logLevel.intValue = EditorGUILayout.Popup("Log Level", logLevel.intValue, AirbridgeLogLevel.LogLevel);
+        
         SerializedProperty iOSURISchemeProperty = serializedAirbridgeData.FindProperty("iOSURIScheme");
         EditorGUILayout.PropertyField(iOSURISchemeProperty, new GUIContent("iOS URI Scheme"), new GUILayoutOption[] { });
 
@@ -52,6 +55,12 @@ public class AirbridgeSettingsWindow : EditorWindow
         SerializedProperty iOSTrackingAuthorizeTimeoutSecondsProperty = serializedAirbridgeData.FindProperty("iOSTrackingAuthorizeTimeoutSeconds");
         EditorGUILayout.PropertyField(iOSTrackingAuthorizeTimeoutSecondsProperty, new GUILayoutOption[] { });
 
+        SerializedProperty sdkSignatureSecretIDProperty = serializedAirbridgeData.FindProperty("sdkSignatureSecretID");
+        EditorGUILayout.PropertyField(sdkSignatureSecretIDProperty, new GUILayoutOption[] { });
+        
+        SerializedProperty sdkSignatureSecretProperty = serializedAirbridgeData.FindProperty("sdkSignatureSecret");
+        EditorGUILayout.PropertyField(sdkSignatureSecretProperty, new GUILayoutOption[] { });
+        
         GUILayout.FlexibleSpace();
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("Update iOS Setting", new GUILayoutOption[] { GUILayout.Height(30) }))
@@ -94,6 +103,8 @@ public class AirbridgeSettingsWindow : EditorWindow
 
     private void UpdateAndroidManifest()
     {
+        string metaDataPrefix = "airbridge==";
+        
         string manifestDirPath = Path.Combine(Application.dataPath, "Plugins/Android");
         string defaultManifestPath = Path.Combine(Application.dataPath, "Plugins/Airbridge/Android/AndroidManifest.xml");
         string manifestPath = Path.Combine(Application.dataPath, "Plugins/Android/AndroidManifest.xml");
@@ -116,8 +127,11 @@ public class AirbridgeSettingsWindow : EditorWindow
         manifest.SetPackageName(Application.identifier);
         manifest.SetPermission("android.permission.INTERNET");
         manifest.SetPermission("android.permission.ACCESS_NETWORK_STATE");
-        manifest.SetAppMetadata("co.ab180.airbridge.sdk.app_name", AirbridgeData.GetInstance().appName);
-        manifest.SetAppMetadata("co.ab180.airbridge.sdk.app_token", AirbridgeData.GetInstance().appToken);
+        manifest.SetAppMetadata("co.ab180.airbridge.sdk.app_name", metaDataPrefix + AirbridgeData.GetInstance().appName);
+        manifest.SetAppMetadata("co.ab180.airbridge.sdk.app_token", metaDataPrefix + AirbridgeData.GetInstance().appToken);
+        manifest.SetAppMetadata("co.ab180.airbridge.sdk.sdk_signature_secret_id", metaDataPrefix + AirbridgeData.GetInstance().sdkSignatureSecretID);
+        manifest.SetAppMetadata("co.ab180.airbridge.sdk.sdk_signature_secret", metaDataPrefix + AirbridgeData.GetInstance().sdkSignatureSecret);
+        manifest.SetAppMetadata("co.ab180.airbridge.sdk.log_level", AirbridgeLogLevel.GetAndroidLogLevel(AirbridgeData.GetInstance().logLevel));
         manifest.SetAppMetadata("co.ab180.airbridge.sdk.custom_domain", AirbridgeData.GetInstance().customDomain);
         manifest.SetAppMetadata("co.ab180.airbridge.sdk.session_timeout_seconds", AirbridgeData.GetInstance().sessionTimeoutSeconds.ToString());
         manifest.SetAppMetadata("co.ab180.airbridge.sdk.user_info_hash_enabled", AirbridgeData.GetInstance().userInfoHashEnabled.ToString().ToLower());
@@ -197,6 +211,9 @@ public class AirbridgeSettingsWindow : EditorWindow
         + "\n"
         + "static NSString* appName = @\"" + AirbridgeData.GetInstance().appName + "\";\n"
         + "static NSString* appToken = @\"" + AirbridgeData.GetInstance().appToken + "\";\n"
+        + "static NSString* sdkSignatureSecretID = @\"" + AirbridgeData.GetInstance().sdkSignatureSecretID + "\";\n"
+        + "static NSString* sdkSignatureSecret = @\"" + AirbridgeData.GetInstance().sdkSignatureSecret + "\";\n"
+        + "static NSUInteger logLevel = " + AirbridgeLogLevel.GetIOSLogLevel(AirbridgeData.GetInstance().logLevel) + ";\n"
         + "static NSString* appScheme = @\"" + AirbridgeData.GetInstance().iOSURIScheme + "\";\n"
         + "static NSInteger sessionTimeoutSeconds = " + AirbridgeData.GetInstance().sessionTimeoutSeconds + ";\n"
         + "static BOOL autoStartTrackingEnabled = " + AirbridgeData.GetInstance().autoStartTrackingEnabled.ToString().ToLower() + ";\n"

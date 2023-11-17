@@ -4,7 +4,7 @@
 ![Generic badge](https://img.shields.io/badge/Unity-2020.3.41f1-black.svg)
 
 ## <a id="plugin-build-for">Built-in Airbridge Unity SDK Version
-![Generic badge](https://img.shields.io/badge/Airbridge_Unity_SDK-1.9.3-orange.svg)
+![Generic badge](https://img.shields.io/badge/Airbridge_Unity_SDK-1.12.1-orange.svg)
 
 ## Before you start
 

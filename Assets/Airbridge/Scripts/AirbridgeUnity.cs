@@ -150,6 +150,10 @@ public class AirbridgeUnity
         native_registerPushToken(token);
     }
     
+    public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
+    {
+        return new AirbridgeWebInterfaceImpl(webToken, postCommandFunction);
+    }
 #elif UNITY_ANDROID && !UNITY_EDITOR
     private static AndroidJavaObject airbridge = new AndroidJavaObject("co.ab180.airbridge.unity.AirbridgeUnity");
 
@@ -251,6 +255,11 @@ public class AirbridgeUnity
     {
         airbridge.CallStatic("registerPushToken", token);
     }
+    
+    public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
+    {
+        return new AirbridgeWebInterfaceImpl(webToken, postCommandFunction);
+    }
 #else
     public static void StartTracking()
     {
@@ -313,6 +322,12 @@ public class AirbridgeUnity
     public static void RegisterPushToken(string token)
     {
         Debug.Log("Airbridge is not implemented this method on this platform");
+    }
+    
+    public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+        return new AirbridgeWebInterfaceDefault();
     }
 #endif
 }
