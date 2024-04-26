@@ -1,10 +1,10 @@
 # Airbridge Unity SDK Example
 
 ## Requirements
-![Generic badge](https://img.shields.io/badge/Unity-2020.3.41f1-black.svg)
+![Generic badge](https://img.shields.io/badge/Unity-2020.3.41f1-black.svg?logo=unity&logoColor=white.svg)
 
 ## <a id="plugin-build-for">Built-in Airbridge Unity SDK Version
-![Generic badge](https://img.shields.io/badge/Airbridge_Unity_SDK-1.12.1-orange.svg)
+![Generic badge](https://img.shields.io/badge/Airbridge_Unity_SDK-1.14.1-blue.svg)
 
 ## Before you start
 
@@ -52,3 +52,7 @@ This page is a guide to setting up the Airbridge Unity SDK example app.
          <string>track in-app events</string>
          ...
     ```
+
+3. **Application crashed with error "... Library not loaded: @rpath/AirBridge.framework/AirBridge ...".**
+
+    : iOS SDK has been changed from static library to dynamic library to support Privacy Manifest. If you are resolving iOS dependencies using [EDM4U](https://github.com/googlesamples/unity-jar-resolver), Click `Assets` > `External Dependency Manager` > `iOS Resolver` > `Settings` and uncheck the `Add use_frameworks! to Podfile` checkbox in the Podfile Configurations section of the iOS Resolver Settings window.
