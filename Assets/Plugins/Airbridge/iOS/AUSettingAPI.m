@@ -9,6 +9,7 @@
 #import "AirbridgeUnity.h"
 #import "AUGet.h"
 #import "AUConvert.h"
+#import "AUHex.h"
 
 @interface AUSettingAPI (Internal)
 
@@ -76,8 +77,8 @@ void native_startTracking() {
 
 void native_registerPushToken(const char* __nonnull token) {
     NSString *tokenString = [AUConvert stringFromChars:token];
-    NSData *tokenData = [tokenString dataUsingEncoding:NSUTF8StringEncoding];
-    
+    NSData *tokenData = [AUHex dataFromHexString:tokenString];
+   
     if (tokenData == nil || tokenData.length == 0) { return; }
     [AirbridgeUnity registerPushToken:tokenData];
 }

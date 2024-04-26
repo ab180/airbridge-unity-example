@@ -465,7 +465,7 @@ public static class AirbridgeJson
 
 			return instance.builder.ToString();
 		}
-
+		
 		void SerializeValue(object value)
 		{
 			IList asList;
@@ -510,17 +510,20 @@ public static class AirbridgeJson
 
 			foreach (object e in obj.Keys)
 			{
-				if (!first)
+				if (IsValidValue(obj[e]))
 				{
-					builder.Append(',');
+					if (!first)
+					{
+						builder.Append(',');
+					}
+
+					SerializeString(e.ToString());
+					builder.Append(':');
+
+					SerializeValue(obj[e]);
+
+					first = false;	
 				}
-
-				SerializeString(e.ToString());
-				builder.Append(':');
-
-				SerializeValue(obj[e]);
-
-				first = false;
 			}
 
 			builder.Append('}');
@@ -534,14 +537,17 @@ public static class AirbridgeJson
 
 			foreach (object obj in anArray)
 			{
-				if (!first)
+				if (IsValidValue(obj))
 				{
-					builder.Append(',');
+					if (!first)
+					{
+						builder.Append(',');
+					}
+
+					SerializeValue(obj);
+
+					first = false;	
 				}
-
-				SerializeValue(obj);
-
-				first = false;
 			}
 
 			builder.Append(']');
@@ -633,6 +639,21 @@ public static class AirbridgeJson
 			{
 				SerializeString(value.ToString());
 			}
+		}
+		
+		bool IsValidValue(object value)
+		{
+			if (value is float)
+			{
+				float floatValue = (float)value;
+				return float.IsFinite(floatValue);
+			}
+			if (value is double || value is decimal)
+			{
+				double doubleValue = Convert.ToDouble(value);
+				return double.IsFinite(doubleValue);
+			}
+			return true;
 		}
 	}
 }

@@ -193,4 +193,10 @@ public class AirbridgeUnity {
         if (token == null) return;
         Airbridge.registerPushToken(token);
     }
+    
+    public static boolean fetchAirbridgeGeneratedUUID(@NotNull String objectName) 
+    {
+        return Airbridge.fetchAirbridgeGeneratedUUID(uuid -> 
+            UnityPlayer.UnitySendMessage(objectName, "OnFetchAirbridgeGeneratedUUID", uuid));
+    }
 }
