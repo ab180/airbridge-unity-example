@@ -11,6 +11,10 @@
 
 #import "AUConvert.h"
 
+#ifndef DEBUG
+#import "UnityAppController.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AUStateAPI (Internal)
@@ -161,6 +165,17 @@ static AUStateAPI* instance;
     [AirBridge.state clearDeviceAlias];
 }
 
+- (int)fetchAirbridgeGeneratedUUID:(nullable const char*)objectChars
+{
+    NSString* object = [AUConvert stringFromChars:objectChars];
+
+    return (int)[AirBridge fetchAirbridgeGeneratedUUID:^(NSString * _Nonnull uuid) {
+        #ifndef DEBUG
+            UnitySendMessage(object.UTF8String, "OnFetchAirbridgeGeneratedUUID", uuid.UTF8String);
+        #endif
+    }];
+}
+
 @end
 
 //
@@ -235,6 +250,11 @@ void native_removeDeviceAliasWithKey(const char* __nullable key) {
 
 void native_clearDeviceAlias(void) {
     [AUStateAPI.instance clearDeviceAlias];
+}
+
+int native_fetchAirbridgeGeneratedUUID(const char* __nullable objectChars)
+{
+    return [AUStateAPI.instance fetchAirbridgeGeneratedUUID:objectChars];
 }
 
 NS_ASSUME_NONNULL_END

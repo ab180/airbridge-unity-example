@@ -49,6 +49,8 @@ public class AirbridgeUnity
     private static extern void native_removeDeviceAliasWithKey(string key);
     [DllImport("__Internal")]
     private static extern void native_clearDeviceAlias();
+    [DllImport("__Internal")]
+    private static extern int native_fetchAirbridgeGeneratedUUID(string objectName);
 
     public static void StartTracking()
     {
@@ -153,6 +155,11 @@ public class AirbridgeUnity
     public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
     {
         return new AirbridgeWebInterfaceImpl(webToken, postCommandFunction);
+    }
+    
+    public static bool FetchAirbridgeGeneratedUUID(string callbackObjectName)
+    {
+        return native_fetchAirbridgeGeneratedUUID(callbackObjectName) != 0;
     }
 #elif UNITY_ANDROID && !UNITY_EDITOR
     private static AndroidJavaObject airbridge = new AndroidJavaObject("co.ab180.airbridge.unity.AirbridgeUnity");
@@ -260,6 +267,11 @@ public class AirbridgeUnity
     {
         return new AirbridgeWebInterfaceImpl(webToken, postCommandFunction);
     }
+    
+    public static bool FetchAirbridgeGeneratedUUID(string callbackObjectName)
+    {
+        return airbridge.CallStatic<bool>("fetchAirbridgeGeneratedUUID", callbackObjectName);
+    }
 #else
     public static void StartTracking()
     {
@@ -328,6 +340,12 @@ public class AirbridgeUnity
     {
         Debug.Log("Airbridge is not implemented this method on this platform");
         return new AirbridgeWebInterfaceDefault();
+    }
+    
+    public static bool FetchAirbridgeGeneratedUUID(string callbackObjectName)
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+        return false;
     }
 #endif
 }

@@ -1,16 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Airbridge.Ecommerce
 {
     public class Product
     {
-        private string idKey = "productID";
-        private string nameKey = "name";
-        private string currencyKey = "currency";
-        private string priceKey = "price";
-        private string quantityKey = "quantity";
-        private string positionKey = "position";
+        private string idKey        = "productID";
+        private string nameKey      = "name";
+        private string currencyKey  = "currency";
+        private string priceKey     = "price";
+        private string quantityKey  = "quantity";
+        private string positionKey  = "position";
+
+        private string categoryIdKey    = "categoryID";
+        private string categoryNameKey  = "categoryName";
+        private string brandIdKey       = "brandID";
+        private string brandNameKey     = "brandName";
 
         private Dictionary<string, object> data = new Dictionary<string, object>();
 
@@ -43,7 +47,27 @@ namespace Airbridge.Ecommerce
         {
             AddData(positionKey, position);
         }
-
+        
+        public void SetCategoryId(string categoryId)
+        {
+            AddData(categoryIdKey, categoryId);
+        }
+        
+        public void SetCategoryName(string categoryName)
+        {
+            AddData(categoryNameKey, categoryName);
+        }
+        
+        public void SetBrandId(string brandId)
+        {
+            AddData(brandIdKey, brandId);
+        }
+        
+        public void SetBrandName(string brandName)
+        {
+            AddData(brandNameKey, brandName);
+        }
+        
         public Dictionary<string, object> ToDictionary()
         {
             return data;
@@ -62,4 +86,3 @@ namespace Airbridge.Ecommerce
         }
     }
 }
-

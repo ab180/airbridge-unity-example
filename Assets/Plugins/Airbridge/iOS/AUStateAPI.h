@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeDeviceAliasWithKey:(NSString*)key;
 - (void)clearDeviceAlias;
 
+- (int)fetchAirbridgeGeneratedUUID:(nullable const char*)objectChars;
+
 @end
 
 void native_setUserID(const char* __nullable ID);
@@ -44,5 +46,6 @@ void native_setDeviceAliasWithKey(const char* __nullable key, const char* __null
 void native_removeDeviceAliasWithKey(const char* __nullable key);
 void native_clearDeviceAlias(void);
 
+int native_fetchAirbridgeGeneratedUUID(const char* __nullable objectChars);
 
 NS_ASSUME_NONNULL_END
