@@ -166,7 +166,7 @@ namespace AirbridgeUnityExample
 
         public void ViewHomeClick()
         {
-            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.VIEW_HOME);
+            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.HOME_VIEWED);
             AirbridgeUnity.TrackEvent(@event);
             ToastMessage.Show($"Track Event: [For Ecommerce][View Home]\nEvent Payload: {@event.ToJsonString()}",
                 Toast.LENGTH_LONG);
@@ -174,7 +174,7 @@ namespace AirbridgeUnityExample
 
         public void ViewSearchResultClick()
         {
-            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.VIEW_SEARCH_RESULT);
+            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.SEARCH_RESULTS_VIEWED);
             @event.SetQuery("SELECT * FROM beverages");
             @event.SetProducts(beverages.ToArray());
             AirbridgeUnity.TrackEvent(@event);
@@ -185,7 +185,7 @@ namespace AirbridgeUnityExample
 
         public void ViewProductListClick()
         {
-            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.VIEW_PRODUCT_LIST);
+            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.PRODUCT_LIST_VIEWED);
             @event.SetProductListId("beverage_list_0");
             @event.SetProducts(beverages.ToArray());
             AirbridgeUnity.TrackEvent(@event);
@@ -196,7 +196,7 @@ namespace AirbridgeUnityExample
 
         public void ViewProductDetailsClick()
         {
-            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.VIEW_PRODUCT_DETAILS);
+            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.PRODUCT_VIEWED);
             @event.SetProducts(beverages[ProductIndex]);
             AirbridgeUnity.TrackEvent(@event);
             ToastMessage.Show(
@@ -206,7 +206,7 @@ namespace AirbridgeUnityExample
 
         public void AddToCartClick()
         {
-            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.ADD_TO_CART);
+            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.ADDED_TO_CART);
             @event.SetCartId("cart_1");
             @event.SetProducts(beverages[ProductIndex]);
             @event.SetCurrency("usd");
@@ -218,7 +218,7 @@ namespace AirbridgeUnityExample
 
         public void OrderClick()
         {
-            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.ORDER_COMPLETE);
+            AirbridgeEvent @event = new AirbridgeEvent(Airbridge.Constants.CATEGORY.ORDER_COMPLETED);
             @event.SetTransactionId("transaction_123");
             @event.SetProducts(beverages[ProductIndex]);
             @event.SetInAppPurchased(true);
