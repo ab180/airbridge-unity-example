@@ -17,10 +17,12 @@
 @implementation AUAppController
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    [super application:app openURL:url options:options];
     return [AUAppDelegate.instance application:app openURL:url options:options];
 }
 
 - (BOOL)application:(UIApplication*)application continueUserActivity:(NSUserActivity*)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler {
+    [super application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
     return [AUAppDelegate.instance application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
