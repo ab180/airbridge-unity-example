@@ -1903,6 +1903,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 237236658}
   m_CullTransparentMesh: 1
+--- !u!1 &239220471
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 239220473}
+  - component: {fileID: 239220472}
+  m_Layer: 0
+  m_Name: ProcessDeepLinkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &239220472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239220471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d8889a49a3e44beeac514e6bb4ffdc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deeplinkURL: 
+--- !u!4 &239220473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239220471}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &261982216
 GameObject:
   m_ObjectHideFlags: 0
@@ -6260,8 +6305,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 540, y: -0}
-  m_SizeDelta: {x: 1080, y: 0}
+  m_AnchoredPosition: {x: 853.3333, y: -0}
+  m_SizeDelta: {x: 1706.6666, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &811526070
 MonoBehaviour:
@@ -9065,8 +9110,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 406807187}
   m_HandleRect: {fileID: 406807186}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.77470356
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -14376,3 +14421,4 @@ SceneRoots:
   - {fileID: 944376166}
   - {fileID: 843012924}
   - {fileID: 846781181}
+  - {fileID: 239220473}
