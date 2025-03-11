@@ -73,3 +73,6 @@ crashlytics-build.properties
 
 # Rider
 .idea/
+
+# Airbridge
+Assets/Airbridge/Resources/*
