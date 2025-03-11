@@ -1,8 +1,9 @@
 ﻿using System.Xml;
-using System.Collections;
 using System.Collections.Generic;
 
-public class AndroidManifest
+// Exclude a class from the document
+/// @cond HIDDEN_SYMBOLS
+class AndroidManifest
 {
     private const string androidUri = "http://schemas.android.com/apk/res/android";
 
@@ -15,6 +16,7 @@ public class AndroidManifest
     private const string intentFilterTag = "intent-filter";
 
     private const string packageAttrKey = "package";
+    private const string themeAttrKey = "theme";
     private const string nameAttrKey = "name";
     private const string valueAttrKey = "value";
     private const string authoritiesAttrKey = "authorities";
@@ -24,8 +26,8 @@ public class AndroidManifest
 
     private XmlElement manifest;
     private List<XmlElement> permissions = new List<XmlElement>();
-    private XmlElement app;
-    private XmlElement unityActivity;
+    private XmlElement application;
+    private List<XmlElement> unityActivities = new List<XmlElement>();
 
     public AndroidManifest(string filename)
     {
@@ -55,15 +57,15 @@ public class AndroidManifest
         {
             if (child.Name == applicationTag)
             {
-                app = child as XmlElement;
+                application = child as XmlElement;
                 break;
             }
         }
 
         // Finding element named "activity"
-        if (app != null)
+        if (application != null)
         {
-            foreach (XmlNode child in app.ChildNodes)
+            foreach (XmlNode child in application.ChildNodes)
             {
                 if (child.Name == activityTag)
                 {
@@ -73,8 +75,7 @@ public class AndroidManifest
                         string value = metadataElement.GetAttribute(valueAttrKey, androidUri);
                         if (bool.Parse(value))
                         {
-                            unityActivity = child as XmlElement;
-                            break;
+                            unityActivities.Add(child as XmlElement);
                         }
                     }
                 }
@@ -104,7 +105,7 @@ public class AndroidManifest
 
     public void SetAppMetadata(string name, string value)
     {
-        foreach (XmlNode child in app.ChildNodes)
+        foreach (XmlNode child in application.ChildNodes)
         {
             if (child.Name == metadataTag)
             {
@@ -120,12 +121,12 @@ public class AndroidManifest
         XmlElement element = document.CreateElement(metadataTag);
         element.SetAttribute(nameAttrKey, androidUri, name);
         element.SetAttribute(valueAttrKey, androidUri, value);
-        app.AppendChild(element);
+        application.AppendChild(element);
     }
 
     public void SetContentProvider(string name, string authorities, string exported)
     {
-        foreach (XmlNode child in app.ChildNodes)
+        foreach (XmlNode child in application.ChildNodes)
         {
             if (child.Name == contentProviderTag)
             {
@@ -143,9 +144,28 @@ public class AndroidManifest
         element.SetAttribute(nameAttrKey, androidUri, name);
         element.SetAttribute(authoritiesAttrKey, androidUri, authorities);
         element.SetAttribute(exportedAttrKey, androidUri, exported);
-        app.AppendChild(element);
+        application.AppendChild(element);
     }
 
+    public void ReplaceApplicationTheme(List<string> themes, string newTheme)
+    {
+        if (themes.Contains(application.GetAttribute(themeAttrKey, androidUri)))
+        {
+            application.SetAttribute(themeAttrKey, androidUri, newTheme);
+        }
+    }
+    
+    public void ReplaceActivityName(List<string> names, string newName)
+    {
+        foreach (XmlElement unityActivity in unityActivities)
+        {
+            if (names.Contains(unityActivity.GetAttribute(nameAttrKey, androidUri)))
+            {
+                unityActivity.SetAttribute(nameAttrKey, androidUri, newName);
+            }  
+        }
+    }
+    
     public void SetUnityActivityIntentFilter(bool autoVerify, string action, string[] categories, string scheme, string host = "", string path = "")
     {
         if (scheme == null || scheme.Equals(""))
@@ -153,36 +173,84 @@ public class AndroidManifest
             return;
         }
 
-        foreach (XmlNode child in unityActivity.ChildNodes)
+        foreach (XmlElement unityActivity in unityActivities)
         {
-            if (child.Name == intentFilterTag)
+            bool didSetData = false;
+            
+            foreach (XmlNode child in unityActivity.ChildNodes)
             {
-                IntentFilter filter = new IntentFilter(document, child as XmlElement);
-                if (filter.HasData(scheme, host, path))
+                if (child.Name == intentFilterTag)
                 {
-                    filter.SetAutoVerify(autoVerify);
-                    filter.SetAction(action);
-                    foreach (string category in categories)
+                    IntentFilter filter = new IntentFilter(document, child as XmlElement);
+                    if (filter.HasData(scheme, host, path))
                     {
-                        filter.SetCategory(category);
+                        filter.SetAutoVerify(autoVerify);
+                        filter.SetAction(action);
+                        foreach (string category in categories)
+                        {
+                            filter.SetCategory(category);
+                        }
+
+                        filter.SetData(scheme, host, path);
+                        didSetData = true;
+                        break;
                     }
-                    filter.SetData(scheme, host, path);
-                    return;
+                }
+            }
+
+            if (!didSetData)
+            {
+                XmlElement element = document.CreateElement(intentFilterTag);
+                unityActivity.AppendChild(element);
+
+                IntentFilter newFilter = new IntentFilter(document, element);
+                newFilter.SetAutoVerify(autoVerify);
+                newFilter.SetAction(action);
+                foreach (string category in categories)
+                {
+                    newFilter.SetCategory(category);
+                }
+
+                newFilter.SetData(scheme, host, path);
+            }
+        }
+    }
+
+    public void SetUnityActivityAppLinksIntentFilter(string host)
+    {
+        foreach (var httpScheme in new string[] { "http", "https" })
+        {
+            SetUnityActivityIntentFilter(
+                true,
+                "android.intent.action.VIEW",
+                new string[] { "android.intent.category.DEFAULT", "android.intent.category.BROWSABLE" },
+                httpScheme,
+                host
+            );
+        }
+    }
+
+    public void RemoveUnityActivityIntentFilter(string scheme, string host = "", string path = "")
+    {
+        if (scheme == null || scheme.Equals(""))
+        {
+            return;
+        }
+
+        foreach (XmlElement unityActivity in unityActivities)
+        {
+            foreach (XmlNode child in unityActivity.ChildNodes)
+            {
+                if (child.Name == intentFilterTag)
+                {
+                    IntentFilter filter = new IntentFilter(document, child as XmlElement);
+                    if (filter.HasData(scheme, host, path))
+                    {
+                        filter.Remove();
+                    }
                 }
             }
         }
-
-        XmlElement element = document.CreateElement(intentFilterTag);
-        unityActivity.AppendChild(element);
-
-        IntentFilter newFilter = new IntentFilter(document, element);
-        newFilter.SetAutoVerify(autoVerify);
-        newFilter.SetAction(action);
-        foreach (string category in categories)
-        {
-            newFilter.SetCategory(category);
-        }
-        newFilter.SetData(scheme, host, path);
     }
 
     public void Save(string filename)
@@ -223,7 +291,7 @@ public class AndroidManifest
         private XmlElement action;
         private List<XmlElement> data = new List<XmlElement>();
         private List<XmlElement> categories = new List<XmlElement>();
-
+        
         public IntentFilter(XmlDocument document, XmlElement element)
         {
             this.document = document;
@@ -320,6 +388,7 @@ public class AndroidManifest
             {
                 element.SetAttribute(hostAttrKey, androidUri, host);
             }
+
             if (!string.IsNullOrEmpty(path))
             {
                 element.SetAttribute(pathAttrKey, androidUri, path);
@@ -337,9 +406,28 @@ public class AndroidManifest
 
                 if (!string.IsNullOrEmpty(host))
                 {
-                    if (element.GetAttribute(hostAttrKey, androidUri) != host)
+                    string matchingAirbridgeAppLinksHost = "";
+                    foreach (var airbridgeAppLinksHost in new string[] { "abr.ge", "airbridge.io", "deeplink.page" })
                     {
-                        continue;
+                        if (host.EndsWith(airbridgeAppLinksHost) && host.Split('.').Length == 3)
+                        {
+                            matchingAirbridgeAppLinksHost = airbridgeAppLinksHost;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(matchingAirbridgeAppLinksHost))
+                    {
+                        if (element.GetAttribute(hostAttrKey, androidUri) != host)
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!element.GetAttribute(hostAttrKey, androidUri).EndsWith(matchingAirbridgeAppLinksHost))
+                        {
+                            continue;
+                        }
                     }
                 }
 
@@ -356,5 +444,15 @@ public class AndroidManifest
 
             return null;
         }
+        
+        public void Remove()
+        {
+            if (root.ParentNode != null)
+            {
+                root.ParentNode.RemoveChild(root);
+            }
+        }
     }
 }
+// ReSharper disable once InvalidXmlDocComment
+/// @endcond

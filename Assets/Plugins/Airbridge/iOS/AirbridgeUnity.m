@@ -7,106 +7,68 @@
 
 #import "AirbridgeUnity.h"
 
-#import <AirBridge/AirBridge.h>
+#import <Airbridge/Airbridge.h>
 
-#import "AUDeeplinkAPI.h"
-#import "AUStateAPI.h"
+#import "AUConvert.h"
+#import "Libraries/Plugins/iOS/Airbridge/AUAppSetting.h"
 
 @implementation AirbridgeUnity
 
-static AirbridgeUnity* instance;
-
-//
-// singleton
-//
-
-+ (AirbridgeUnity*) getInstance:(NSString *)appToken
-                        appName:(NSString *)appName
-              withLaunchOptions:(NSDictionary *)launchOptions
++ (instancetype)sharedInstance
 {
-    [AUStateAPI.instance setSDKDevelopmentPlatform:"unity"];
+    static AirbridgeUnity *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
+}
 
-    [AirBridge getInstance:appToken 
-                   appName:appName 
-         withLaunchOptions:launchOptions];
-    [AUDeeplinkAPI.instance setInitialDeeplinkCallback];
+- (void)initializeSDK {
+    AirbridgeOptionBuilder *builder = [[AirbridgeOptionBuilder alloc]
+        initWithName:appName
+        token:appToken
+    ];
     
-    if (instance != nil) {
-        instance = [[AirbridgeUnity alloc] init];
-    }
+    NSArray *customDomains = [customDomain componentsSeparatedByString:@" "];
     
-    return instance;
-}
-
-+ (nullable AirbridgeUnity*)instance {
-    return instance;
-}
-
-+ (void) setInstance:(AirbridgeUnity*)input {
-    instance = input;
-}
-
-//
-// interface
-//
-
-+ (ABState*)state {
-    return AirBridge.state;
-}
-
-+ (ABDeeplink*)deeplink {
-    return AirBridge.deeplink;
-}
-
-//
-// setting
-//
-
-+ (void)autoStartTrackingEnabled:(BOOL)enable {
-    AirBridge.autoStartTrackingEnabled = enable;
-}
-
-+ (void)startTracking {
-    [AirBridge startTracking];
-}
-
-+ (void) registerPushToken:(NSData*)pushToken {
-    [AirBridge registerPushToken:pushToken];
-}
-
-+ (void)setSessionTimeout:(NSInteger)milliseconds {
-    [AirBridge setSessionTimeout:milliseconds];
-}
-
-+ (void)setDeeplinkFetchTimeout:(NSInteger)millisecond {
-    [AirBridge.deeplink setHandleTrackingLinkTimeout:millisecond];
-}
-
-+ (void)setIsUserInfoHashed:(BOOL)enable {
-    [AirBridge setIsUserInfoHashed:enable];
-}
-
-+ (void)setIsTrackAirbridgeDeeplinkOnly:(BOOL)enable {
-    [AirBridge setIsTrackAirbridgeDeeplinkOnly:enable];
-}
-
-+ (void)setIsFacebookDeferredAppLinkEnabled:(BOOL)enable {
-    [AirBridge setIsFacebookDeferredAppLinkEnabled:enable];
-}
-
-+ (void)setTrackingAuthorizeTimeout:(NSInteger)milliseconds {
-    AirBridge.setting.trackingAuthorizeTimeout = milliseconds;
-}
-
-+ (void)setSDKSignatureSecretWithID:(NSString*)identifier
-                             secret:(NSString*)string {
-    if (identifier.length != 0 && string.length != 0) {
-        [AirBridge setSDKSignatureSecretWithID:identifier secret:string];
+    builder = [builder setLogLevel:logLevel];
+    builder = [builder setSDKDevelopmentPlatform:@"unity"];
+    if (customDomains.count != 0) {
+        builder = [builder setTrackingLinkCustomDomains:customDomains];
     }
-}
-
-+ (void)setLogLevel:(NSUInteger)level {
-    [AirBridge setLogLevel:(ABLogLevel)level];
+    builder = [builder setSessionTimeoutWithSecond:sessionTimeoutSeconds];
+    builder = [builder setAutoStartTrackingEnabled:autoStartTrackingEnabled];
+    builder = [builder setHashUserInformationEnabled:userInfoHashEnabled];
+    builder = [builder setTrackAirbridgeDeeplinkOnlyEnabled:trackAirbridgeLinkOnly];
+    builder = [builder setAutoDetermineTrackingAuthorizationTimeoutWithSecond:trackingAuthorizeTimeoutSeconds];
+    builder = [builder setTrackInSessionLifecycleEventEnabled:trackInSessionLifeCycleEventEnabled];
+    builder = [builder setPauseEventTransmitOnBackgroundEnabled:pauseEventTransmitOnBackgroundEnabled];
+    builder = [builder setClearEventBufferOnInitializeEnabled:clearEventBufferOnInitializeEnabled];
+    builder = [builder setSDKEnabled:sdkEnabled];
+    builder = [builder setEventBufferCountLimit:eventBufferCountLimitInGibibyte];
+    builder = [builder setEventBufferSizeLimitWithGibibyte:eventBufferSizeLimitInGibibyte];
+    builder = [builder setEventTransmitIntervalWithSecond:eventTransmitIntervalSeconds];
+    builder = [builder setOnAttributionReceived:^(NSDictionary<NSString *,NSString *> * dictionary) {
+    if (self.attributionOnReceived == nil) { return; }
+        self.attributionOnReceived([AUConvert stringFromDictionary:dictionary]);
+    }];
+    builder = [builder
+     setSDKSignatureWithId:sdkSignatureSecretID
+     secret:sdkSignatureSecret
+    ];
+    
+    builder = [builder setSDKAttributes: @{
+        @"wrapperName": @"airbridge-unity-sdk",
+        @"wrapperVersion": @"4.3.0"
+    }];
+    
+    builder = [builder setSDKWrapperOption: @{
+        @"isHandleAirbridgeDeeplinkOnly": @(isHandleAirbridgeDeeplinkOnly)
+    }];
+    
+    [Airbridge initializeSDKWithOption:[builder build]];
 }
 
 @end
+

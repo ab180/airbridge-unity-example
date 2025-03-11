@@ -7,21 +7,24 @@
 //
 
 #import "AUAppDelegate.h"
-#import "AUAppSetting.h"
+
+#import <Airbridge/Airbridge.h>
 
 #import "AirbridgeUnity.h"
+#import "Libraries/Plugins/iOS/Airbridge/AUAppSetting.h"
 
 @implementation AUAppDelegate
 
 static AUAppDelegate* shared = AUAppDelegate.instance;
+static BOOL isInitialized = NO;
 
-+ (void) initialize {
++ (void)initialize {
     if (shared == nil) {
         shared = AUAppDelegate.instance;
     }
 }
 
-+ (AUAppDelegate*) instance {
++ (AUAppDelegate *)instance {
     if (shared == nil) {
         shared = [[AUAppDelegate alloc] init];
     }
@@ -40,32 +43,56 @@ static AUAppDelegate* shared = AUAppDelegate.instance;
     return self;
 }
 
-- (void) didFinishLaunching:(NSNotification*)notification {
-    [AirbridgeUnity autoStartTrackingEnabled:autoStartTrackingEnabled];
-    [AirbridgeUnity setSessionTimeout:sessionTimeoutSeconds * 1000];
-    [AirbridgeUnity setIsUserInfoHashed:userInfoHashEnabled];
-    [AirbridgeUnity setIsTrackAirbridgeDeeplinkOnly:trackAirbridgeLinkOnly];
-    [AirbridgeUnity setIsFacebookDeferredAppLinkEnabled:facebookDeferredAppLinkEnabled];
-    [AirbridgeUnity setTrackingAuthorizeTimeout:trackingAuthorizeTimeoutSeconds * 1000];
-    [AirbridgeUnity setSDKSignatureSecretWithID:sdkSignatureSecretID secret:sdkSignatureSecret];
-    [AirbridgeUnity setLogLevel:logLevel];
-
-    [AirbridgeUnity getInstance:appToken 
-                        appName:appName 
-              withLaunchOptions:notification.userInfo];
+- (void)didFinishLaunching:(NSNotification *)notification {
+    if (appToken == nil || [appToken isEqualToString:@""]) { return; }
+    if (appName == nil || [appName isEqualToString:@""]) { return; }
+    
+    [AirbridgeUnity.sharedInstance initializeSDK];
+    isInitialized = YES;
 }
 
-- (void) onOpenURL:(NSNotification*)notification {
-    NSURL* url = notification.userInfo[@"url"];
-
-    [AirbridgeUnity.deeplink handleURLSchemeDeeplink:url];
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if (!isInitialized) { return NO; }
+    [Airbridge trackDeeplinkWithUrl:url];
+    BOOL isHandled = [Airbridge handleDeeplinkWithUrl:url onSuccess:^(NSURL * _Nonnull url) {
+         if (AirbridgeUnity.sharedInstance.deeplinkOnReceived == nil) {
+              AirbridgeUnity.sharedInstance.initializeBeforeDeeplinkString = url.absoluteString;
+              return;
+          }
+        AirbridgeUnity.sharedInstance.deeplinkOnReceived(url.absoluteString);
+    }];
+    
+    if (isHandled || isHandleAirbridgeDeeplinkOnly) { return YES; }
+    
+    if (AirbridgeUnity.sharedInstance.deeplinkOnReceived == nil) {
+        AirbridgeUnity.sharedInstance.initializeBeforeDeeplinkString = url.absoluteString;
+    } else {
+        AirbridgeUnity.sharedInstance.deeplinkOnReceived(url.absoluteString);
+    }
+    
+    return YES;
 }
 
-- (void) application:(UIApplication*)application 
-continueUserActivity:(NSUserActivity*)userActivity 
-  restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler
-{
-    [AirbridgeUnity.deeplink handleUniversalLink:userActivity.webpageURL];
+- (BOOL)application:(UIApplication*)application continueUserActivity:(NSUserActivity*)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler {
+    if (!isInitialized) { return NO; }
+    [Airbridge trackDeeplinkWithUserActivity:userActivity];
+    BOOL isHandled = [Airbridge handleDeeplinkWithUserActivity:userActivity onSuccess:^(NSURL * _Nonnull url) {
+        if (AirbridgeUnity.sharedInstance.deeplinkOnReceived == nil) {
+            AirbridgeUnity.sharedInstance.initializeBeforeDeeplinkString = url.absoluteString;
+            return;
+        }
+        AirbridgeUnity.sharedInstance.deeplinkOnReceived(url.absoluteString);
+    }];
+    
+    if (isHandled || isHandleAirbridgeDeeplinkOnly) { return YES; }
+    
+    if (AirbridgeUnity.sharedInstance.deeplinkOnReceived == nil) {
+        AirbridgeUnity.sharedInstance.initializeBeforeDeeplinkString = userActivity.webpageURL.absoluteString;
+    } else {
+        AirbridgeUnity.sharedInstance.deeplinkOnReceived(userActivity.webpageURL.absoluteString);
+    }
+    
+    return YES;
 }
 
 @end

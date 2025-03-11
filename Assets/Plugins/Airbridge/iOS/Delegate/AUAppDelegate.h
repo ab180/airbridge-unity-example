@@ -14,11 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface AUAppDelegate : NSObject <AppDelegateListener>
 
-+ (AUAppDelegate*) instance;
++ (AUAppDelegate *) instance;
 
-- (void) application:(UIApplication*)application 
-continueUserActivity:(NSUserActivity*)userActivity 
-  restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler;
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options;
+- (BOOL)application:(UIApplication*)application continueUserActivity:(NSUserActivity*)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler;
 
 @end
 

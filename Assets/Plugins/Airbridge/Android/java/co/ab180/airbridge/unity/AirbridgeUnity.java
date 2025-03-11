@@ -1,202 +1,467 @@
 package co.ab180.airbridge.unity;
 
+import static co.ab180.airbridge.unity.AirbridgeUtils.getMessage;
+import static co.ab180.airbridge.unity.AirbridgeUtils.isNotNull;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
-import com.unity3d.player.UnityPlayer;
-
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import co.ab180.airbridge.Airbridge;
-import co.ab180.airbridge.AirbridgeCallback;
-import co.ab180.airbridge.event.Event;
+import co.ab180.airbridge.AirbridgeLifecycleIntegration;
 
 public class AirbridgeUnity {
 
-    private static boolean autoStartTrackingEnabled;
+    public static final String TAG = AirbridgeUnity.class.getSimpleName();
 
-    private static String startDeeplink;
-    private static String deeplinkCallbackObjectName;
-    
-    private static String receivedAttributionResult;
-    private static String attributionResultCallbackObjectName;
-    private static AtomicBoolean needsToSendAttributionResult = new AtomicBoolean(true);
+    private static String deeplink = null;
+    private static AirbridgeCallback deeplinkCallback = null;
 
-    public static void setAutoStartTrackingEnabled(boolean value) {
-        autoStartTrackingEnabled = value;
-    }
+    private static String receivedAttributionResult = null;
+    private static AirbridgeCallback attributionResultCallback = null;
 
-    public static void startTracking() {
-        Airbridge.startTracking();
-    }
+    static AirbridgeLifecycleIntegration airbridgeLifecycleIntegration = null;
 
-    public static void setUserId(String id) {
-        Airbridge.getCurrentUser().setId(id);
-    }
-
-    public static void setUserEmail(String email) {
-        Airbridge.getCurrentUser().setEmail(email);
-    }
-
-    public static void setUserPhone(String phone) {
-        Airbridge.getCurrentUser().setPhone(phone);
-    }
-
-    public static void setUserAlias(String key, String value) {
-        if (key == null || value == null) return;
-        Airbridge.getCurrentUser().setAlias(key, value);
-    }
-
-    public static void setUserAttribute(String key, int value) {
-        if (key == null) return;
-        Airbridge.getCurrentUser().setAttribute(key, value);
-    }
-
-    public static void setUserAttribute(String key, long value) {
-        if (key == null) return;
-        Airbridge.getCurrentUser().setAttribute(key, value);
-    }
-
-    public static void setUserAttribute(String key, float value) {
-        if (key == null) return;
-        Airbridge.getCurrentUser().setAttribute(key, value);
-    }
-
-    public static void setUserAttribute(String key, boolean value) {
-        if (key == null) return;
-        Airbridge.getCurrentUser().setAttribute(key, value);
-    }
-
-    public static void setUserAttribute(String key, String value) {
-        if (key == null || value == null) return;
-        Airbridge.getCurrentUser().setAttribute(key, value);
-    }
-
-    public static void clearUserAttributes() {
-        Airbridge.getCurrentUser().clearAttributes();
-    }
-
-    public static void expireUser() {
-        Airbridge.expireUser();
-    }
-
-    public static void clickTrackingLink(String trackingLink) {
-        if (trackingLink == null) return;
-        Airbridge.click(trackingLink, null);
-    }
-
-    public static void impressionTrackingLink(String trackingLink) {
-        if (trackingLink == null) return;
-        Airbridge.impression(trackingLink);
-    }
-
-    public static void trackEvent(String jsonString) {
+    public static void enableSDK() {
         try {
-            JSONObject object = new JSONObject(jsonString);
-            Event event = AirbridgeEventParser.from(object);
-            Airbridge.trackEvent(event);
-        } catch (Exception e) {
-            Log.e("AirbridgeUnity", "Error occurs while parsing data json string", e);
+            Airbridge.enableSDK();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {enableSDK}", throwable);
         }
     }
 
-    public static void setDeeplinkCallback(String objectName) {
-        deeplinkCallbackObjectName = objectName;
-        if (startDeeplink != null && !startDeeplink.isEmpty()) {
-            UnityPlayer.UnitySendMessage(deeplinkCallbackObjectName, "OnTrackingLinkResponse", startDeeplink);
+    public static void disableSDK() {
+        try {
+            Airbridge.disableSDK();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {disableSDK}", throwable);
+        }
+    }
+
+    public static boolean isSDKEnabled() {
+        try {
+            return Airbridge.isSDKEnabled();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {isSDKEnabled}", throwable);
+        }
+        return false;
+    }
+
+    public static void startTracking() {
+        try {
+            Airbridge.startTracking();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {startTracking}", throwable);
+        }
+    }
+
+    public static void stopTracking() {
+        try {
+            Airbridge.stopTracking();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {stopTracking}", throwable);
+        }
+    }
+
+    public static boolean isTrackingEnabled() {
+        try {
+            return Airbridge.isTrackingEnabled();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {isTrackingEnabled}", throwable);
+        }
+        return false;
+    }
+
+    public static void setUserID(@NotNull String id) {
+        try {
+            Airbridge.setUserID(id);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserID}", throwable);
+        }
+    }
+
+    public static void clearUserID() {
+        try {
+            Airbridge.clearUserID();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearUserID}", throwable);
+        }
+    }
+
+    public static void setUserEmail(@NotNull String email) {
+        try {
+            Airbridge.setUserEmail(email);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserEmail}", throwable);
+        }
+    }
+
+    public static void clearUserEmail() {
+        try {
+            Airbridge.clearUserEmail();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearUserEmail}", throwable);
+        }
+    }
+
+    public static void setUserPhone(@NotNull String phone) {
+        try {
+            Airbridge.setUserPhone(phone);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserPhone}", throwable);
+        }
+    }
+
+    public static void clearUserPhone() {
+        try {
+            Airbridge.clearUserPhone();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearUserPhone}", throwable);
+        }
+    }
+
+    public static void setUserAttribute(@NotNull String key, int value) {
+        try {
+            Airbridge.setUserAttribute(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAttribute}", throwable);
+        }
+    }
+
+    public static void setUserAttribute(@NotNull String key, long value) {
+        try {
+            Airbridge.setUserAttribute(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAttribute}", throwable);
+        }
+    }
+
+    public static void setUserAttribute(@NotNull String key, float value) {
+        try {
+            Airbridge.setUserAttribute(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAttribute}", throwable);
+        }
+    }
+
+    public static void setUserAttribute(@NotNull String key, double value) {
+        try {
+            Airbridge.setUserAttribute(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAttribute}", throwable);
+        }
+    }
+
+    public static void setUserAttribute(@NotNull String key, boolean value) {
+        try {
+            Airbridge.setUserAttribute(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAttribute}", throwable);
+        }
+    }
+
+    public static void setUserAttribute(@NotNull String key, @NotNull String value) {
+        try {
+            Airbridge.setUserAttribute(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAttribute}", throwable);
+        }
+    }
+
+    public static void removeUserAttribute(@NotNull String key) {
+        try {
+            Airbridge.removeUserAttribute(key);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {removeUserAttribute}", throwable);
+        }
+    }
+
+    public static void clearUserAttributes() {
+        try {
+            Airbridge.clearUserAttributes();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearUserAttributes}", throwable);
+        }
+    }
+
+    public static void setUserAlias(@NotNull String key, @NotNull String value) {
+        try {
+            Airbridge.setUserAlias(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setUserAlias}", throwable);
+        }
+    }
+
+    public static void removeUserAlias(@NotNull String key) {
+        try {
+            Airbridge.removeUserAlias(key);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {removeUserAlias}", throwable);
+        }
+    }
+
+    public static void clearUserAlias() {
+        try {
+            Airbridge.clearUserAlias();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearUserAlias}", throwable);
+        }
+    }
+
+    public static void clearUser() {
+        try {
+            Airbridge.clearUser();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearUser}", throwable);
+        }
+    }
+
+    public static void setDeviceAlias(@NotNull String key, @NotNull String value) {
+        try {
+            Airbridge.setDeviceAlias(key, value);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {setDeviceAlias}", throwable);
+        }
+    }
+
+    public static void removeDeviceAlias(@NotNull String key) {
+        try {
+            Airbridge.removeDeviceAlias(key);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {removeDeviceAlias}", throwable);
+        }
+    }
+
+    public static void clearDeviceAlias() {
+        try {
+            Airbridge.clearDeviceAlias();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {clearDeviceAlias}", throwable);
+        }
+    }
+
+    public static void registerPushToken(@NotNull String token) {
+        try {
+            Airbridge.registerPushToken(token);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {registerPushToken}", throwable);
+        }
+    }
+
+    public static void trackEvent(
+            @NotNull String category,
+            String semanticAttributesJsonString,
+            String customAttributesJsonString
+    ) {
+        try {
+            Map<String, Object> semanticAttributes = AirbridgeJsonParser.from(semanticAttributesJsonString);
+            Map<String, Object> customAttributes = AirbridgeJsonParser.from(customAttributesJsonString);
+            Airbridge.trackEvent(category, semanticAttributes, customAttributes);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {trackEvent}", throwable);
+        }
+    }
+
+    public static void click(@NotNull String trackingLink, AirbridgeCallback onSuccess, AirbridgeCallback onFailure) {
+        try {
+            Airbridge.click(
+                    Uri.parse(trackingLink),
+                    unit -> {
+                        if (onSuccess != null) onSuccess.Invoke("");
+                    },
+                    throwable -> {
+                        if (onFailure != null) onFailure.Invoke(getMessage(throwable));
+                    }
+            );
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {click}", throwable);
+        }
+    }
+
+    public static void impression(@NotNull String trackingLink, AirbridgeCallback onSuccess, AirbridgeCallback onFailure) {
+        try {
+            Airbridge.impression(
+                    Uri.parse(trackingLink),
+                    unit -> {
+                        if (onSuccess != null) onSuccess.Invoke("");
+                    },
+                    throwable -> {
+                        if (onFailure != null) onFailure.Invoke(getMessage(throwable));
+                    }
+            );
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {impression}", throwable);
+        }
+    }
+
+    public static void fetchAirbridgeGeneratedUUID(@NotNull AirbridgeCallback onSuccess, AirbridgeCallback onFailure) {
+        try {
+            Airbridge.fetchAirbridgeGeneratedUUID(
+                    onSuccess::Invoke,
+                    throwable -> {
+                        if (onFailure != null) onFailure.Invoke(getMessage(throwable));
+                    }
+            );
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {fetchAirbridgeGeneratedUUID}", throwable);
+        }
+    }
+
+    public static void fetchDeviceUUID(@NotNull AirbridgeCallback onSuccess, AirbridgeCallback onFailure) {
+        try {
+            Airbridge.fetchDeviceUUID(
+                    onSuccess::Invoke,
+                    throwable -> {
+                        if (onFailure != null) onFailure.Invoke(getMessage(throwable));
+                    }
+            );
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {fetchDeviceUUID}", throwable);
+        }
+    }
+
+    public static String createWebInterfaceScript(@NotNull String webToken, @NotNull String postMessageScript) {
+        try {
+            return Airbridge.createWebInterfaceScript(webToken, postMessageScript);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {createWebInterfaceScript}", throwable);
+        }
+        return "";
+    }
+
+    public static void handleWebInterfaceCommand(@NotNull String command) {
+        try {
+            Airbridge.handleWebInterfaceCommand(command);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {handleWebInterfaceCommand}", throwable);
+        }
+    }
+
+    public static void createTrackingLink(
+            @NotNull String channel,
+            String optionJsonString,
+            @NotNull AirbridgeCallback onSuccess,
+            AirbridgeCallback onFailure
+    ) {
+        try {
+            Map<String, Object> option = AirbridgeJsonParser.from(optionJsonString);
+            if (option == null) {
+                option = new HashMap<>();
+            }
+            Airbridge.createTrackingLink(channel, option,
+                    trackingLink -> {
+                        try {
+                            JSONObject result = new JSONObject();
+                            result.put("shortURL", trackingLink.getShortURL().toString());
+                            result.put("qrcodeURL", trackingLink.getQrcodeURL().toString());
+                            onSuccess.Invoke(result.toString());
+                        } catch (Throwable throwable) {
+                            Log.e(TAG, "Error occurs while parsing tracking-link data to json string", throwable);
+                        }
+                    },
+                    throwable -> {
+                        if (onFailure != null) onFailure.Invoke(getMessage(throwable));
+                    }
+            );
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {createTrackingLink}", throwable);
+        }
+    }
+
+    /* ========================== Handle Deeplink ========================== */
+
+    public static void handleDeeplink(@NotNull AirbridgeCallback onDeeplinkReceived) {
+
+        // Only the first callback is valid
+        if (deeplinkCallback != null) return;
+        deeplinkCallback = onDeeplinkReceived;
+
+        // Success
+        if (isNotNull(deeplink)) {
+            handleDeeplinkOnSuccess(deeplink);
+        }
+        // Check deferred deeplink
+        else {
+            processHandleDeferredDeeplink();
         }
     }
 
     @SuppressWarnings("WeakerAccess")
-    public static void processDeeplinkData(Intent intent) {
-        Airbridge.getDeeplink(intent, new AirbridgeCallback.SimpleCallback<Uri>() {
-
-            @Override
-            public void onSuccess(Uri uri) {
-                if (deeplinkCallbackObjectName != null && !deeplinkCallbackObjectName.isEmpty()) {
-                    UnityPlayer.UnitySendMessage(deeplinkCallbackObjectName, "OnTrackingLinkResponse", uri.toString());
-                    startDeeplink = null;
+    public static void processHandleDeeplink(Intent intent) {
+        try {
+            boolean handled = Airbridge.handleDeeplink(intent, /* NotNull */ uri -> {
+                if (isNotNull(deeplinkCallback)) {
+                    handleDeeplinkOnSuccess(uri.toString());
                 } else {
-                    if (startDeeplink == null) {
-                        startDeeplink = uri.toString();
-                    } else {
-                        startDeeplink = null;
-                    }
+                    deeplink = uri.toString();
                 }
-            }
+            });
 
-            @Override
-            public void onFailure(@NotNull Throwable throwable) {
-
+            if (handled || AirbridgeSettings.isHandleAirbridgeDeeplinkOnly) { return; }
+            if (isNotNull(deeplinkCallback)) {
+                handleDeeplinkOnSuccess(intent.getDataString());
+            } else {
+                deeplink = intent.getDataString();
             }
-        });
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {handleDeeplink}", throwable);
+        }
     }
-    
-    public static void setAttributionResultCallback(String objectName) {
-        attributionResultCallbackObjectName = objectName;
+
+    private static void processHandleDeferredDeeplink() {
+        try {
+            Airbridge.handleDeferredDeeplink(/* Nullable */ uri -> {
+                if (isNotNull(uri) && isNotNull(deeplinkCallback)) {
+                    handleDeeplinkOnSuccess(uri.toString());
+                }
+            });
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {handleDeferredDeeplink}", throwable);
+        }
+    }
+
+    private static void handleDeeplinkOnSuccess(String uri) {
+        deeplinkCallback.Invoke(uri);
+        deeplink = null;
+    }
+
+    /* ========================== Attribution Result Callback ========================== */
+
+    public static void setOnAttributionReceived(@NotNull AirbridgeCallback onAttributionReceived) {
+
+        // Only the first callback is valid
+        if (attributionResultCallback != null) return;
+        attributionResultCallback = onAttributionReceived;
+
         unitySendAttributionResult();
     }
 
-    public static void processAttributionData(Map<String, String> result) {
-        if (result != null) {
-            JSONObject jsonObject = new JSONObject();
-            try {
-                for (Map.Entry<String, String> entry : result.entrySet()) {
-                    jsonObject.put(entry.getKey(), entry.getValue());
-                }
-                receivedAttributionResult = jsonObject.toString();
-            } catch (JSONException e) {
-                Log.e("AirbridgeUnity", "Error occurs while parsing attribution data to json string", e);
-            }
-        } else {
+    public static void processSetOnAttributionReceived(@NotNull Map<String, String> result) {
+        try {
+            receivedAttributionResult = AirbridgeJsonParser.to(result);
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while parsing attribution data to json string", throwable);
+        }
+        unitySendAttributionResult();
+    }
+
+    private static void unitySendAttributionResult() {
+        if (isNotNull(attributionResultCallback) && isNotNull(receivedAttributionResult)) {
+            attributionResultCallback.Invoke(receivedAttributionResult);
             receivedAttributionResult = null;
         }
-        if (!autoStartTrackingEnabled) {
-            unitySendAttributionResult();
-        }
-    }
-    
-    private static void unitySendAttributionResult() {
-        if (attributionResultCallbackObjectName != null && !attributionResultCallbackObjectName.isEmpty() &&
-            receivedAttributionResult != null && !receivedAttributionResult.isEmpty()) {
-            if (needsToSendAttributionResult.getAndSet(false)) {
-                UnityPlayer.UnitySendMessage(attributionResultCallbackObjectName, "OnAttributionResultReceived", receivedAttributionResult);
-            }
-        }
-    }
-    
-    public static void setDeviceAlias(String key, String value)
-    {
-        if (key == null || value == null) return;
-        Airbridge.setDeviceAlias(key, value);
     }
 
-    public static void removeDeviceAlias(String key)
-    {
-        if (key == null) return;
-        Airbridge.removeDeviceAlias(key);
-    }
+    /* ================================================================================= */
 
-    public static void clearDeviceAlias()
-    {
-        Airbridge.clearDeviceAlias();
-    }
-    
-    public static void registerPushToken(String token)
-    {
-        if (token == null) return;
-        Airbridge.registerPushToken(token);
-    }
-    
-    public static boolean fetchAirbridgeGeneratedUUID(@NotNull String objectName) 
-    {
-        return Airbridge.fetchAirbridgeGeneratedUUID(uuid -> 
-            UnityPlayer.UnitySendMessage(objectName, "OnFetchAirbridgeGeneratedUUID", uuid));
+    public static void setLifecycleIntegration(AirbridgeLifecycleIntegration lifecycleIntegration) {
+        if (airbridgeLifecycleIntegration != null) return;
+        airbridgeLifecycleIntegration = lifecycleIntegration;
     }
 }

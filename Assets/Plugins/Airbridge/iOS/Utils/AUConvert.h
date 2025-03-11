@@ -6,9 +6,6 @@
 //  Copyright © 2019 ab180. All rights reserved.
 //
 
-#import <AirBridge/ABUser.h>
-#import <AirBridge/ABProduct.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AUConvert : NSObject
@@ -16,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSDictionary*) dictionaryFromJSONChars:(nullable const char*)jsonChars;
 + (nullable NSArray*) arrayFromJSONChars:(nullable const char*)jsonChars;
 + (nullable NSString*) stringFromChars:(nullable const char*)chars;
++ (nullable NSString *)stringFromDictionary:(NSDictionary *)dictionary;
++ (const char *)charsFromString:(NSString *)string;
 
 @end
 

@@ -68,4 +68,25 @@
     return string;
 }
 
++ (const char *)charsFromString:(NSString *)string {
+    const char * cString;
+    if (string == nil) { cString = @"".UTF8String; }
+    else { cString = string.UTF8String; }
+
+    char* copy = (char*)malloc(strlen(cString) + 1);
+    strcpy(copy, cString);
+
+    return copy;
+}
+
++ (NSString *)stringFromDictionary:(NSDictionary *)dictionary {
+    NSData *data = [NSJSONSerialization
+        dataWithJSONObject:dictionary
+        options:NSJSONWritingFragmentsAllowed
+        error:nil
+    ];
+    
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
 @end

@@ -1,351 +1,511 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
-public class AirbridgeUnity
+/// <summary>
+/// %Airbridge Unity SDK
+/// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "CheckNamespace")]
+public class Airbridge
 {
-#if UNITY_IOS && !UNITY_EDITOR
-    [DllImport("__Internal")]
-    private static extern void native_startTracking();
-    [DllImport ("__Internal")]
-    private static extern void native_setUserID(string userID);
-    [DllImport ("__Internal")]
-    private static extern void native_setUserEmail(string userEmail);
-    [DllImport ("__Internal")]
-    private static extern void native_setUserPhone(string userPhone);
-    [DllImport ("__Internal")]
-    private static extern void native_addUserAlias(string key, string value);
-    [DllImport("__Internal")]
-    private static extern void native_addUserAttributesWithInt(string key, int value);
-    [DllImport("__Internal")]
-    private static extern void native_addUserAttributesWithLong(string key, long value);
-    [DllImport("__Internal")]
-    private static extern void native_addUserAttributesWithFloat(string key, float value);
-    [DllImport("__Internal")]
-    private static extern void native_addUserAttributesWithBOOL(string key, bool value);
-    [DllImport("__Internal")]
-    private static extern void native_addUserAttributesWithString(string key, string value);
-    [DllImport("__Internal")]
-    private static extern void native_clearUserAttributes();
-    [DllImport("__Internal")]
-    private static extern void native_expireUser();
-    [DllImport("__Internal")]
-    private static extern void native_click(string trackingLink);
-    [DllImport("__Internal")]
-    private static extern void native_impression(string trackingLink);
-    [DllImport("__Internal")]
-    private static extern void native_setDeeplinkCallback(string objectName);
-    [DllImport("__Internal")]
-    private static extern void native_setAttributionResultCallback(string objectName);
-    [DllImport("__Internal")]
-    private static extern void native_sendEvent(string json);
-    [DllImport("__Internal")]
-    private static extern void native_registerPushToken(string token);
-    [DllImport("__Internal")]
-    private static extern void native_setDeviceAliasWithKey(string key, string value);
-    [DllImport("__Internal")]
-    private static extern void native_removeDeviceAliasWithKey(string key);
-    [DllImport("__Internal")]
-    private static extern void native_clearDeviceAlias();
-    [DllImport("__Internal")]
-    private static extern int native_fetchAirbridgeGeneratedUUID(string objectName);
-
-    public static void StartTracking()
+    private static readonly Lazy<IAirbridgePlugin> Lazy = new Lazy<IAirbridgePlugin>(() =>
     {
-        native_startTracking();
-    }
-
-    public static void SetUser(AirbridgeUser user)
-    {
-        ExpireUser();
-
-        native_setUserID(user.GetId());
-        native_setUserEmail(user.GetEmail());
-        native_setUserPhone(user.GetPhoneNumber());
-
-        Dictionary<string, string> userAlias = user.GetAlias();
-        foreach (string key in userAlias.Keys)
-        {
-            native_addUserAlias(key, userAlias[key]);
-        }
-        Dictionary<string, object> attrs = user.GetAttributes();
-        foreach (string key in attrs.Keys)
-        {
-            object value = attrs[key];
-            if (value is int)
-            {
-                native_addUserAttributesWithInt(key, (int)value);
-            }
-            else if (value is long)
-            {
-                native_addUserAttributesWithLong(key, (long)value);
-            }
-            else if (value is float)
-            {
-                native_addUserAttributesWithFloat(key, (float)value);
-            }
-            else if (value is bool)
-            {
-                native_addUserAttributesWithBOOL(key, (bool)value);
-            }
-            else if (value is string)
-            {
-                native_addUserAttributesWithString(key, (string)value);
-            }
-            else
-            {
-                Debug.LogWarning("Invalid 'user-attribute' value data type received. The value will ignored");
-            }
-        }
-    }
-
-    public static void ExpireUser()
-    {
-        native_expireUser();
-    }
-
-
-    public static void ClickTrackingLink(string trackingLink, string deeplink = null, string fallback = null)
-    {
-        native_click(trackingLink);
-    }
-
-    public static void ImpressionTrackingLink(string trackingLink)
-    {
-        native_impression(trackingLink);
-    }
-
-    public static void SetDeeplinkCallback(string callbackObjectName)
-    {
-        native_setDeeplinkCallback(callbackObjectName);
-    }
-
-    public static void SetOnAttributionReceived(string callbackObjectName)
-    {
-        native_setAttributionResultCallback(callbackObjectName);
-    }
-
-    public static void TrackEvent(AirbridgeEvent @event)
-    {
-        native_sendEvent(@event.ToJsonString());
-    }
-    
-    public static void SetDeviceAlias(string key, string value)
-    {
-        native_setDeviceAliasWithKey(key, value);
-    }
-
-    public static void RemoveDeviceAlias(string key)
-    {
-        native_removeDeviceAliasWithKey(key);
-    }
-
-    public static void ClearDeviceAlias()
-    {
-        native_clearDeviceAlias();
-    }
-    
-    public static void RegisterPushToken(string token)
-    {
-        native_registerPushToken(token);
-    }
-    
-    public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
-    {
-        return new AirbridgeWebInterfaceImpl(webToken, postCommandFunction);
-    }
-    
-    public static bool FetchAirbridgeGeneratedUUID(string callbackObjectName)
-    {
-        return native_fetchAirbridgeGeneratedUUID(callbackObjectName) != 0;
-    }
-#elif UNITY_ANDROID && !UNITY_EDITOR
-    private static AndroidJavaObject airbridge = new AndroidJavaObject("co.ab180.airbridge.unity.AirbridgeUnity");
-
-    public static void StartTracking()
-    {
-        airbridge.CallStatic("startTracking");
-    }
-
-    public static void SetUser(AirbridgeUser user)
-    {
-        ExpireUser();
-
-        airbridge.CallStatic("setUserId", user.GetId());
-        airbridge.CallStatic("setUserEmail", user.GetEmail());
-        airbridge.CallStatic("setUserPhone", user.GetPhoneNumber());
-        Dictionary<string, string> alias = user.GetAlias();
-        foreach (string key in alias.Keys)
-        {
-            airbridge.CallStatic("setUserAlias", key, alias[key]);
-        }
-        Dictionary<string, object> attrs = user.GetAttributes();
-        foreach (string key in attrs.Keys)
-        {
-            object value = attrs[key];
-            if (value is int)
-            {
-                airbridge.CallStatic("setUserAttribute", key, (int)value);
-            }
-            else if (value is long)
-            {
-                airbridge.CallStatic("setUserAttribute", key, (long)value);
-            }
-            else if (value is float)
-            {
-                airbridge.CallStatic("setUserAttribute", key, (float)value);
-            }
-            else if (value is bool)
-            {
-                airbridge.CallStatic("setUserAttribute", key, (bool)value);
-            }
-            else if (value is string)
-            {
-                airbridge.CallStatic("setUserAttribute", key, (string)value);
-            }
-            else
-            {
-                Debug.LogWarning("Invalid 'user-attribute' value data type received. The value will ignored");
-            }
-        }
-    }
-
-    public static void ExpireUser()
-    {
-        airbridge.CallStatic("expireUser");
-    }
-
-    public static void ClickTrackingLink(string trackingLink, string deeplink = null, string fallback = null)
-    {
-        airbridge.CallStatic("clickTrackingLink", trackingLink);
-    }
-
-    public static void ImpressionTrackingLink(string trackingLink)
-    {
-        airbridge.CallStatic("impressionTrackingLink", trackingLink);
-    }
-
-    public static void SetDeeplinkCallback(string callbackObjectName)
-    {
-        airbridge.CallStatic("setDeeplinkCallback", callbackObjectName);
-    }
-
-    public static void SetOnAttributionReceived(string callbackObjectName)
-    {
-        airbridge.CallStatic("setAttributionResultCallback", callbackObjectName);
-    }
-
-    public static void TrackEvent(AirbridgeEvent @event)
-    {
-        string jsonString = @event.ToJsonString();
-        airbridge.CallStatic("trackEvent", jsonString);
-    }
-    
-    public static void SetDeviceAlias(string key, string value)
-    {
-        airbridge.CallStatic("setDeviceAlias", key, value);
-    }
-
-    public static void RemoveDeviceAlias(string key)
-    {
-        airbridge.CallStatic("removeDeviceAlias", key);
-    }
-
-    public static void ClearDeviceAlias()
-    {
-        airbridge.CallStatic("clearDeviceAlias");
-    }
-    
-    public static void RegisterPushToken(string token)
-    {
-        airbridge.CallStatic("registerPushToken", token);
-    }
-    
-    public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
-    {
-        return new AirbridgeWebInterfaceImpl(webToken, postCommandFunction);
-    }
-    
-    public static bool FetchAirbridgeGeneratedUUID(string callbackObjectName)
-    {
-        return airbridge.CallStatic<bool>("fetchAirbridgeGeneratedUUID", callbackObjectName);
-    }
-#else
-    public static void StartTracking()
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-
-    public static void SetUser(AirbridgeUser user)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void ExpireUser()
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void ClickTrackingLink(string trackingLink, string deeplink = null, string fallback = null)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void ImpressionTrackingLink(string trackingLink)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    // When you register your deeplink callback, 'Airbridge' will call "void OnTrackingLinkResponse(string url)" method
-    public static void SetDeeplinkCallback(string callbackObjectName)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-    
-    // When you register your attribution result callback, 'Airbridge' will call "void OnAttributionResultReceived(string jsonString)" method
-    public static void SetOnAttributionReceived(string callbackObjectName)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void TrackEvent(AirbridgeEvent @event)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void SetDeviceAlias(string key, string value)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void RemoveDeviceAlias(string key)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void ClearDeviceAlias()
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-
-    public static void RegisterPushToken(string token)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-    }
-    
-    public static AirbridgeWebInterface CreateWebInterface(string webToken, PostCommandFunction postCommandFunction)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-        return new AirbridgeWebInterfaceDefault();
-    }
-    
-    public static bool FetchAirbridgeGeneratedUUID(string callbackObjectName)
-    {
-        Debug.Log("Airbridge is not implemented this method on this platform");
-        return false;
-    }
+        IAirbridgePlugin pluginInterface = new AirbridgeUnsupportedPlugin();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            pluginInterface = new AirbridgeAndroidPlugin();
+#elif UNITY_IOS && !UNITY_EDITOR 
+            pluginInterface = new AirbridgeIOSPlugin();
 #endif
+            
+        return pluginInterface;
+    });
+    
+   private static IAirbridgePlugin AirbridgePlugin => Lazy.Value;
+   
+    #region Core
+
+    /// <summary>
+    /// Enables the SDK.
+    /// </summary>
+    public static void EnableSDK()
+    {
+        AirbridgePlugin.EnableSDK();
+    }
+
+    /// <summary>
+    /// Disables the SDK.
+    /// </summary>
+    public static void DisableSDK()
+    {
+        AirbridgePlugin.DisableSDK();
+    }
+
+    /// <summary>
+    /// Checks whether the SDK is currently enabled.
+    /// </summary>
+    /// <returns> `true` if the SDK is enabled, `false` otherwise.</returns>
+    public static bool IsSDKEnabled()
+    {
+        return AirbridgePlugin.IsSDKEnabled();
+    }
+    
+    #endregion
+
+    #region Privacy
+
+    /// <summary>
+    /// Start collecting and transferring events.
+    /// </summary>
+    public static void StartTracking()
+    {
+        AirbridgePlugin.StartTracking();
+    }
+
+    /// <summary>
+    /// Stop collecting and transferring events.
+    /// </summary>
+    public static void StopTracking()
+    {
+        AirbridgePlugin.StopTracking();
+    }
+
+    /// <summary>
+    /// Checks whether the SDK is currently enabled for tracking.
+    /// </summary>
+    /// <returns> `true` if the SDK is enabled for tracking, `false` otherwise.</returns>
+    public static bool IsTrackingEnabled()
+    {
+        return AirbridgePlugin.IsTrackingEnabled();
+    }
+
+    #endregion
+
+    #region Deeplink
+
+    /// <summary>
+    /// Handles deeplink and deferred-deeplink.
+    /// </summary>
+    /// <param name="onDeeplinkReceived"> A callback listener that receives a delivered deeplink URL.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.SetOnDeeplinkReceived((string url)  =>
+    /// {
+    ///     /* Process deeplink data */
+    /// });
+    /// @endcode
+    /// </example>
+    public static void SetOnDeeplinkReceived(Action<string> onDeeplinkReceived)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetOnDeeplinkReceived(AirbridgeNullCheck.RequireNonNull(onDeeplinkReceived));
+        });
+    }
+
+    #endregion
+
+    #region Data Collection
+
+    /// <summary>
+    /// Sets the user ID.
+    /// </summary>
+    /// <param name="id"> The user ID.</param>
+    public static void SetUserID(string id)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetUserID(AirbridgeNullCheck.RequireNonNull(id));
+        });
+    }
+
+    /// <summary>
+    /// Clears the user ID.
+    /// </summary>
+    public static void ClearUserID()
+    {
+        AirbridgePlugin.ClearUserID();
+    }
+
+    /// <summary>
+    /// Sets the user email.
+    /// </summary>
+    /// <param name="email"> The user email.</param>
+    public static void SetUserEmail(string email)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetUserEmail(AirbridgeNullCheck.RequireNonNull(email));
+        });
+    }
+
+    /// <summary>
+    /// Clears the user email.
+    /// </summary>
+    public static void ClearUserEmail()
+    {
+        AirbridgePlugin.ClearUserEmail();
+    }
+
+    /// <summary>
+    /// Sets the user phone number.
+    /// </summary>
+    /// <param name="phone"> The user phone number.</param>
+    public static void SetUserPhone(string phone)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetUserPhone(AirbridgeNullCheck.RequireNonNull(phone));
+        });
+    }
+
+    /// <summary>
+    /// Clears the user phone number.
+    /// </summary>
+    public static void ClearUserPhone()
+    {
+        AirbridgePlugin.ClearUserPhone();
+    }
+
+    /// <summary>
+    /// Sets the key, value pair to the user attribute.
+    /// </summary>
+    /// <param name="key"> The key that uniquely identifies the user attribute.</param>
+    /// <param name="value"> The value to set for the user attribute.</param>
+    public static void SetUserAttribute(string key, object value)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetUserAttribute(AirbridgeNullCheck.RequireNonNull(key), AirbridgeNullCheck.RequireNonNull(value));
+        });
+    }
+
+    /// <summary>
+    /// Removes the user attribute with the given key.
+    /// </summary>
+    /// <param name="key"> The key that uniquely identifies the user attribute.</param>
+    public static void RemoveUserAttribute(string key)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.RemoveUserAttribute(AirbridgeNullCheck.RequireNonNull(key));
+        });
+    }
+
+    /// <summary>
+    /// Clears all user attributes.
+    /// </summary>
+    public static void ClearUserAttributes()
+    {
+        AirbridgePlugin.ClearUserAttributes();
+    }
+
+    /// <summary>
+    /// Sets the key, value pair to the user alias.
+    /// </summary>
+    /// <param name="key"> The key that uniquely identifies the user alias.</param>
+    /// <param name="value"> The value to set for the user alias.</param>
+    public static void SetUserAlias(string key, string value)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetUserAlias(AirbridgeNullCheck.RequireNonNull(key), AirbridgeNullCheck.RequireNonNull(value));
+        });
+    }
+
+    /// <summary>
+    /// Removes the user alias with the given key.
+    /// </summary>
+    /// <param name="key"> The key that uniquely identifies the user alias.</param>
+    public static void RemoveUserAlias(string key)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.RemoveUserAlias(AirbridgeNullCheck.RequireNonNull(key));
+        });
+    }
+
+    /// <summary>
+    /// Clears all user aliases.
+    /// </summary>
+    public static void ClearUserAlias()
+    {
+        AirbridgePlugin.ClearUserAlias();
+    }
+
+    /// <summary>
+    /// Clears all user information.
+    /// </summary>
+    public static void ClearUser()
+    {
+        AirbridgePlugin.ClearUser();
+    }
+
+
+    /// <summary>
+    /// Sets the key, value pair to the device alias.
+    /// </summary>
+    /// <param name="key"> The key that uniquely identifies the device alias.</param>
+    /// <param name="value"> The value to set for the device alias.</param>
+    public static void SetDeviceAlias(string key, string value)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetDeviceAlias(AirbridgeNullCheck.RequireNonNull(key), AirbridgeNullCheck.RequireNonNull(value));
+        });
+    }
+
+    /// <summary>
+    /// Removes the device alias with the given key.
+    /// </summary>
+    /// <param name="key"> The key that uniquely identifies the device alias.</param>
+    public static void RemoveDeviceAlias(string key)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.RemoveDeviceAlias(AirbridgeNullCheck.RequireNonNull(key));
+        }); 
+    }
+
+    /// <summary>
+    /// Clears all device aliases.
+    /// </summary>
+    public static void ClearDeviceAlias()
+    {
+        AirbridgePlugin.ClearDeviceAlias();
+    }
+
+
+    /// <summary>
+    /// Registers a push notification token to track app uninstalls.
+    /// </summary>
+    /// <param name="token"> The push notification token, typically obtained from the device’s notification service provider,
+    /// such as APNs for Apple devices or FCM registration token for Android devices.</param>
+    public static void RegisterPushToken(string token)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.RegisterPushToken(AirbridgeNullCheck.RequireNonNull(token));
+        });
+    }
+
+    #endregion
+
+    #region Event
+
+    /// <summary>
+    /// Track events.
+    /// </summary>
+    /// <param name="category"> The category of the event.</param>
+    /// <param name="semanticAttributes"> The semantic attributes of the event.</param>
+    /// <param name="customAttributes"> The custom attributes of the event.</param>
+    public static void TrackEvent(
+        string category,
+        Dictionary<string, object> semanticAttributes = null,
+        Dictionary<string, object> customAttributes = null
+    )
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.TrackEvent(AirbridgeNullCheck.RequireNonNull(category), semanticAttributes, customAttributes);
+        });
+    }
+
+    #endregion
+
+    #region Placement
+
+    /// <summary>
+    /// Queries the tracking link to the server to get the deeplink information and then moves according to that information if a deeplink is set up.
+    /// It also adds a click event for the tracking link.
+    /// </summary>
+    /// <param name="trackingLink"> The URL to be queried for deeplink information and tracked for clicks.</param>
+    /// <param name="onSuccess"> An optional callback action to be invoked if the click action is successful.</param>
+    /// <param name="onFailure"> An optional callback action to be invoked if an error occurs during the click action.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.Click(
+    ///     trackingLink: "https://abr.ge/~~~",
+    ///     onSuccess: () => { /* Handle on success */ },
+    ///     onFailure: (Exception exception) => { /* Handle on failure */ }
+    /// );
+    /// @endcode
+    /// </example>
+    public static void Click(string trackingLink, Action onSuccess = null, Action<Exception> onFailure = null)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.Click(AirbridgeNullCheck.RequireNonNull(trackingLink), onSuccess, onFailure);
+        });
+    }
+
+    /// <summary>
+    /// Adds an impression event for the tracking link.
+    /// </summary>
+    /// <param name="trackingLink"> The URL to be tracked for impressions.</param>
+    /// <param name="onSuccess"> An optional callback action to be invoked if the impression action is successful.</param>
+    /// <param name="onFailure"> An optional callback action to be invoked if an error occurs during the impression action.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.Impression(
+    ///     trackingLink: "https://abr.ge/~~~",
+    ///     onSuccess: () => { /* Handle on success */ },
+    ///     onFailure: (Exception exception) => { /* Handle on failure */ }
+    /// );
+    /// @endcode
+    /// </example>
+    public static void Impression(string trackingLink, Action onSuccess = null, Action<Exception> onFailure = null)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.Impression(AirbridgeNullCheck.RequireNonNull(trackingLink), onSuccess, onFailure);
+        });
+    }
+
+    #endregion
+
+    #region Publication
+
+    /// <summary>
+    /// Request the Device UUID and get the response.
+    /// </summary>
+    /// <param name="onSuccess"> A callback action that takes a string parameter representing the Device UUID.</param>
+    /// <param name="onFailure"> An optional callback action to be invoked if an error occurs.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.FetchDeviceUUID(
+    ///     onSuccess: (string uuid) => { /* Process UUID */ },
+    ///     onFailure: (Exception exception) => { /* Handle on failure */ }
+    /// );
+    /// @endcode
+    /// </example>
+    public static void FetchDeviceUUID(Action<string> onSuccess, Action<Exception> onFailure = null)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.FetchDeviceUUID(AirbridgeNullCheck.RequireNonNull(onSuccess), onFailure);
+        });
+    }
+
+    /// <summary>
+    /// Request the AirbridgeGeneratedUUID and get the response.
+    /// </summary>
+    /// <param name="onSuccess"> A callback action that takes a string parameter representing the %Airbridge Generated UUID.</param>
+    /// <param name="onFailure"> An optional callback action to be invoked if an error occurs.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.FetchAirbridgeGeneratedUUID(
+    ///     onSuccess: (string uuid) => { /* Process UUID */ },
+    ///     onFailure: (Exception exception) => { /* Handle on failure */ }
+    /// );
+    /// @endcode
+    /// </example>
+    public static void FetchAirbridgeGeneratedUUID(Action<string> onSuccess, Action<Exception> onFailure = null)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.FetchAirbridgeGeneratedUUID(AirbridgeNullCheck.RequireNonNull(onSuccess), onFailure);
+        });
+    }
+
+    /// <summary>
+    /// Sets a listener for receiving attribution of install event.
+    /// </summary>
+    /// <param name="onAttributionReceived"> A callback listener that receives a Dictionary&lt;string, object&gt; parameter representing the attribution result.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.SetOnAttributionReceived((Dictionary&lt;string, object&gt; attributionResult) =>
+    /// {
+    ///     /* Process attribution data */
+    /// });
+    /// @endcode
+    /// </example>
+    public static void SetOnAttributionReceived(Action<Dictionary<string, object>> onAttributionReceived)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetOnAttributionReceived(AirbridgeNullCheck.RequireNonNull(onAttributionReceived));
+        });
+    }
+    
+    /// <summary>
+    /// Creates a tracking-link using airbridge-server that move user to specific page of app and track click-event.
+    /// </summary>
+    /// <param name="channel"> The channel of tracking-link.</param>
+    /// <param name="option"> The option to create tracking-link.</param>
+    /// <param name="onSuccess"> A callback action that takes an AirbridgeTrackingLink parameter representing the tracking-link created.</param>
+    /// <param name="onFailure"> An optional callback action to be invoked if an error occurs.</param>
+    public static void CreateTrackingLink(
+        string channel, 
+        Dictionary<string, object> option, 
+        Action<AirbridgeTrackingLink> onSuccess,
+        Action<Exception> onFailure = null
+    )
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.CreateTrackingLink(
+                AirbridgeNullCheck.RequireNonNull(channel),
+                AirbridgeNullCheck.RequireNonNull(option),
+                AirbridgeNullCheck.RequireNonNull(onSuccess),
+                onFailure
+            );
+        });
+    }
+
+    #endregion
+
+    #region Hybrid
+
+    /// <summary>
+    /// Creates a script that initialize the web interface to implement web interface manually.
+    /// </summary>
+    /// <param name="webToken"> The token to initialize %Airbridge Web SDK.</param>
+    /// <param name="postMessageScript"> The JavaScript code to post commands from web to app.
+    /// (The parameter name used to send messages from web to app is `payload`.) </param>
+    /// <returns> The web interface script.</returns>
+    public static string CreateWebInterfaceScript(string webToken, string postMessageScript)
+    {
+        return AirbridgeNullCheck.CallMethodWithNullCheck(
+            () => AirbridgePlugin.CreateWebInterfaceScript(AirbridgeNullCheck.RequireNonNull(webToken),
+                AirbridgeNullCheck.RequireNonNull(postMessageScript)),
+            defaultValue: ""
+        );
+    }
+
+    /// <summary>
+    /// Handles commands from the web interface to implement web interface manually.
+    /// </summary>
+    /// <param name="command"> The command to handle.</param>
+    public static void HandleWebInterfaceCommand(string command)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.HandleWebInterfaceCommand(AirbridgeNullCheck.RequireNonNull(command));
+        });
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Indicates whether notification was sent by %Airbridge to track uninstall of app.
+    /// </summary>
+    /// <param name="data"> The notification data to check.</param>
+    /// <returns> `true` if notification was sent by %Airbridge, `false` otherwise.</returns>
+    public static bool IsUninstallTrackingNotification(IDictionary<string, string> data)
+    {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        return data.ContainsKey("airbridge-uninstall-tracking");
+#else
+        Debug.Log("Airbridge is not implemented this method on this platform.");
+        return false;
+#endif
+    }
 }

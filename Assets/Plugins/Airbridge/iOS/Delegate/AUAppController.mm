@@ -16,15 +16,12 @@
 
 @implementation AUAppController
 
-- (BOOL) application:(UIApplication*)application 
-continueUserActivity:(NSUserActivity*)userActivity 
-  restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler 
-{
-    [AUAppDelegate.instance application:application 
-                   continueUserActivity:userActivity 
-                     restorationHandler:restorationHandler];
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    return [AUAppDelegate.instance application:app openURL:url options:options];
+}
 
-    return YES;
+- (BOOL)application:(UIApplication*)application continueUserActivity:(NSUserActivity*)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>>* _Nullable))restorationHandler {
+    return [AUAppDelegate.instance application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
 @end
