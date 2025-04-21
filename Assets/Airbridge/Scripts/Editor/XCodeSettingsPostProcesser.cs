@@ -18,21 +18,14 @@ namespace Airbridge.Editor
             AddUniversalLink(
                 pathToBuiltProject,
                 new string[] {
+                    string.Format("{0}.abr.ge", AirbridgeData.GetInstance().appName),
                     string.Format("{0}.airbridge.io", AirbridgeData.GetInstance().appName),
                     string.Format("{0}.deeplink.page", AirbridgeData.GetInstance().appName),
                     AirbridgeData.GetInstance().customDomain,
                 }
             );
-            AddScheme(pathToBuiltProject, AirbridgeData.GetInstance().iOSURIScheme);
+            AddScheme(pathToBuiltProject, AirbridgeData.GetInstance().iosUriScheme);
             AddCustomDomainResInPlist(pathToBuiltProject);
-            AddOSFrameworks(
-                pathToBuiltProject,
-                new string[] {
-                    "AdSupport.framework",
-                    "iAd.framework",
-                    "CoreTelephony.framework"
-                }
-            );
         }
 
         private static void AddUniversalLink(string pathProject, string[] hosts)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace AirbridgeUnityExample
 {
@@ -42,7 +43,7 @@ namespace AirbridgeUnityExample
 
         public string ToJsonString()
         {
-            return AirbridgeJson.Serialize(data);
+            return Json.Serialize(data);
         }
 
         private void AddData(string key, object value)

@@ -16,7 +16,7 @@ public class AirbridgeData : ScriptableObject
     public int logLevel = AirbridgeLogLevel.Default;
     public string sdkSignatureSecretID;
     public string sdkSignatureSecret;
-    public string iOSURIScheme;
+    public string iosUriScheme;
     public string androidURIScheme;
     public string customDomain;
     public int sessionTimeoutSeconds = 300;
@@ -26,6 +26,8 @@ public class AirbridgeData : ScriptableObject
     public bool autoStartTrackingEnabled = true;
     public bool facebookDeferredAppLinkEnabled = false;
     public int iOSTrackingAuthorizeTimeoutSeconds = 30;
+    public string facebookAppId;
+    public AirbridgeInAppPurchaseEnvironment inAppPurchaseEnvironment = AirbridgeInAppPurchaseEnvironment.Production;
 
 #if UNITY_EDITOR
     private static AirbridgeData instance;

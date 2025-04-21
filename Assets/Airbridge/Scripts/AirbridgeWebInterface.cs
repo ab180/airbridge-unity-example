@@ -37,7 +37,7 @@ public class AirbridgeWebInterfaceImpl : AirbridgeWebInterface
         get
         {
             int jsonSchemaVersion = 4;
-            string sdkVersion = "1.14.1";
+            string sdkVersion = "1.16.4";
             return $@"
 AirbridgeNative = {{ }};
 AirbridgeNative.postCommand = function (argument) {{

@@ -1,14 +1,25 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+#if UNITY_IOS && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+using AOT;
+#endif
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "CheckNamespace")]
 public class AirbridgeUnity
 {
 #if UNITY_IOS && !UNITY_EDITOR
+
+    #region DLL Imports, only iOS
+    [DllImport("__Internal")]
+    private static extern bool native_isSDKEnabled();
     [DllImport("__Internal")]
     private static extern void native_startTracking();
+    [DllImport("__Internal")]
+    private static extern void native_stopTracking();
     [DllImport ("__Internal")]
     private static extern void native_setUserID(string userID);
     [DllImport ("__Internal")]
@@ -51,12 +62,32 @@ public class AirbridgeUnity
     private static extern void native_clearDeviceAlias();
     [DllImport("__Internal")]
     private static extern int native_fetchAirbridgeGeneratedUUID(string objectName);
+    [DllImport("__Internal")]
+    private static extern void native_fetchDeviceUUID(Action<string> onSuccess);
+    [DllImport("__Internal")]
+    private static extern void native_startInAppPurchaseTracking();
+    [DllImport("__Internal")]
+    private static extern void native_stopInAppPurchaseTracking();
+    [DllImport("__Internal")]
+    private static extern void native_setOnInAppPurchaseReceived(Func<string, string> onReceived);
+    #endregion
 
+    #region iOS Bridge Interfaces
+    public static bool IsSDKEnabled()
+    {  
+        return native_isSDKEnabled();
+    }
+    
     public static void StartTracking()
     {
         native_startTracking();
     }
-
+    
+    public static void StopTracking()
+    {
+        native_stopTracking();
+    }
+    
     public static void SetUser(AirbridgeUser user)
     {
         ExpireUser();
@@ -161,14 +192,82 @@ public class AirbridgeUnity
     {
         return native_fetchAirbridgeGeneratedUUID(callbackObjectName) != 0;
     }
+
+    private static Action<string> _onDeviceUUIDSuccessCallback;
+
+    [MonoPInvokeCallback(typeof(Func<string, string>))]
+    private static void FetchDeviceUUIDCallback(string deviceUUID)
+    {
+        _onDeviceUUIDSuccessCallback?.Invoke(deviceUUID);
+    }
+    
+    public static void FetchDeviceUUID(Action<string> onSuccess)
+    {
+        _onDeviceUUIDSuccessCallback = onSuccess;
+        native_fetchDeviceUUID(FetchDeviceUUIDCallback);
+    }
+    
+    public static void StartInAppPurchaseTracking()
+    {
+        native_startInAppPurchaseTracking();
+    }
+
+    public static void StopInAppPurchaseTracking()
+    {
+        native_stopInAppPurchaseTracking();
+    }
+    
+    private static Func<Dictionary<string, object>, Dictionary<string, object>> _onInAppPurchaseReceivedCallback;
+    
+    [MonoPInvokeCallback(typeof(Func<string, string>))]
+    private static string SetOnInAppPurchaseReceivedCallback(string onReceivedString)
+    {
+        if (_onInAppPurchaseReceivedCallback == null) { return null; }
+
+        try
+        {
+            if (string.IsNullOrEmpty(onReceivedString)) { return null; }
+            
+            var dictionary = AirbridgeJson.Deserialize(onReceivedString) as Dictionary<string, object>;
+            var result = _onInAppPurchaseReceivedCallback.Invoke(
+                dictionary ?? new Dictionary<string, object>()
+            );
+
+            return result == null ? null : AirbridgeJson.Serialize(result);
+        }
+        catch (Exception e)
+        {
+            Debug.Log("[Airbridge][SetOnInAppPurchaseReceivedCallback] Exception:\n" + e.StackTrace);
+        }
+
+        return onReceivedString;
+    }
+
+     public static void SetOnInAppPurchaseReceived(Func<Dictionary<string, object>, Dictionary<string, object>> onReceived)
+    {
+        _onInAppPurchaseReceivedCallback = onReceived;
+        native_setOnInAppPurchaseReceived(SetOnInAppPurchaseReceivedCallback);
+    }
+    #endregion
+    
 #elif UNITY_ANDROID && !UNITY_EDITOR
     private static AndroidJavaObject airbridge = new AndroidJavaObject("co.ab180.airbridge.unity.AirbridgeUnity");
 
+    public static bool IsSDKEnabled()
+    {  
+        return airbridge.CallStatic<bool>("isSDKEnabled");
+    }
+    
     public static void StartTracking()
     {
         airbridge.CallStatic("startTracking");
     }
-
+    
+    public static void StopTracking()
+    {
+        airbridge.CallStatic("stopTracking");
+    }
+    
     public static void SetUser(AirbridgeUser user)
     {
         ExpireUser();
@@ -272,12 +371,57 @@ public class AirbridgeUnity
     {
         return airbridge.CallStatic<bool>("fetchAirbridgeGeneratedUUID", callbackObjectName);
     }
+
+    public static void FetchDeviceUUID(Action<string> onSuccess)
+    {
+        airbridge.CallStatic("fetchDeviceUUID", new AirbridgeCallbackAndroidBridge(onSuccess.Invoke));
+    }
+    
+    public static void StartInAppPurchaseTracking()
+    {
+        airbridge.CallStatic("startInAppPurchaseTracking");
+    }
+    
+    public static void StopInAppPurchaseTracking()
+    {
+        airbridge.CallStatic("stopInAppPurchaseTracking");
+    }
+
+    public static void SetOnInAppPurchaseReceived(Func<Dictionary<string, object>, Dictionary<string, object>> onReceived)
+    {
+        airbridge.CallStatic("setOnInAppPurchaseReceived", new AirbridgeCallbackWithReturnAndroidBridge(jsonString =>
+        {
+            try
+            {
+                Dictionary<string, object> result =
+                    onReceived.Invoke(AirbridgeJson.Deserialize(jsonString) as Dictionary<string, object>);
+                return AirbridgeJson.Serialize(result);     
+            }
+            catch (Exception e)
+            {
+                Debug.Log("[Airbridge][SetOnInAppPurchaseReceived] Exception:\n" + e.StackTrace);
+            }
+
+            return jsonString;
+        }));
+    }
+
 #else
+    public static bool IsSDKEnabled()
+    {  
+        Debug.Log("Airbridge is not implemented this method on this platform");
+        return false;
+    }
+    
     public static void StartTracking()
     {
         Debug.Log("Airbridge is not implemented this method on this platform");
     }
 
+    public static void StopTracking()
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+    }
 
     public static void SetUser(AirbridgeUser user)
     {
@@ -347,5 +491,26 @@ public class AirbridgeUnity
         Debug.Log("Airbridge is not implemented this method on this platform");
         return false;
     }
+    
+    public static void FetchDeviceUUID(Action<string> onSuccess)
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+    }
+    
+    public static void StartInAppPurchaseTracking()
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+    }
+    
+    public static void StopInAppPurchaseTracking()
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+    }
+    
+    public static void SetOnInAppPurchaseReceived(Func<Dictionary<string, object>, Dictionary<string, object>> onReceived)
+    {
+        Debug.Log("Airbridge is not implemented this method on this platform");
+    }
+    
 #endif
 }

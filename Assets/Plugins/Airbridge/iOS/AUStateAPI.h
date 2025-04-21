@@ -9,6 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^DeviceUUIDOnReceived)(NSString *deviceUUID);
+typedef void (*UnityDeviceUUIDOnReceived)(const char* deviceUUID);
+
 @interface AUStateAPI : NSObject
 
 + (AUStateAPI*) instance;
@@ -47,5 +50,6 @@ void native_removeDeviceAliasWithKey(const char* __nullable key);
 void native_clearDeviceAlias(void);
 
 int native_fetchAirbridgeGeneratedUUID(const char* __nullable objectChars);
+void native_fetchDeviceUUID(UnityDeviceUUIDOnReceived deviceUUIDOnReceived);
 
 NS_ASSUME_NONNULL_END

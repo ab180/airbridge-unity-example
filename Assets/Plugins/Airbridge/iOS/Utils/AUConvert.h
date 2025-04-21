@@ -14,8 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface AUConvert : NSObject
 
 + (nullable NSDictionary*) dictionaryFromJSONChars:(nullable const char*)jsonChars;
++ (nullable NSDictionary*)dictionaryFromString:(NSString *)string;
++ (NSString *)stringFromDictionary:(NSDictionary *)dictionary;
 + (nullable NSArray*) arrayFromJSONChars:(nullable const char*)jsonChars;
 + (nullable NSString*) stringFromChars:(nullable const char*)chars;
++ (const char *)charsFromString:(NSString *)string;
 
 @end
 

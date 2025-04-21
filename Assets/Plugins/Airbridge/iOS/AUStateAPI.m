@@ -257,4 +257,9 @@ int native_fetchAirbridgeGeneratedUUID(const char* __nullable objectChars)
     return [AUStateAPI.instance fetchAirbridgeGeneratedUUID:objectChars];
 }
 
+void native_fetchDeviceUUID(UnityDeviceUUIDOnReceived deviceUUIDOnReceived) 
+{
+    deviceUUIDOnReceived([AUConvert charsFromString:[AirBridge deviceUUID]]);
+}
+
 NS_ASSUME_NONNULL_END

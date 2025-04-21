@@ -74,9 +74,19 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)autoStartTrackingEnabled:(BOOL)enable;
 
 /**
+ *  Checks whether the SDK is currently enabled
+ */
++ (bool)isSDKEnabled;
+
+/**
  *  Start Airbridge event tracking
  */
 + (void)startTracking;
+
+/**
+ *  Stop Airbridge event tracking
+ */
++ (void)stopTracking;
 
 /**
  * Register a push token(token values from a register notification in Application Delegates)
@@ -141,6 +151,15 @@ NS_ASSUME_NONNULL_BEGIN
  *                  log level in NSUInteger
  */
 + (void)setLogLevel:(NSUInteger)level;
+
+
+/**
+ *  Airbridge in-app purchase tracking
+ */
++ (void)startInAppPurchaseTracking;
++ (void)stopInAppPurchaseTracking;
+
++ (void)setInAppPurchaseEnvironment:(NSString *)environmentString;
 
 @end
 

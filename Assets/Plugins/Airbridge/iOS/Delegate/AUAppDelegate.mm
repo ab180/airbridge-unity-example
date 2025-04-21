@@ -41,6 +41,10 @@ static AUAppDelegate* shared = AUAppDelegate.instance;
 }
 
 - (void) didFinishLaunching:(NSNotification*)notification {
+    if (appToken == nil || [appToken isEqualToString:@""]) { return; }
+    if (appName == nil || [appName isEqualToString:@""]) { return; }
+    
+    [AirbridgeUnity setInAppPurchaseEnvironment:inAppPurchaseEnvironment];
     [AirbridgeUnity autoStartTrackingEnabled:autoStartTrackingEnabled];
     [AirbridgeUnity setSessionTimeout:sessionTimeoutSeconds * 1000];
     [AirbridgeUnity setIsUserInfoHashed:userInfoHashEnabled];

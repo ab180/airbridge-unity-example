@@ -1,10 +1,10 @@
 # Airbridge Unity SDK Example
 
 ## Requirements
-![Generic badge](https://img.shields.io/badge/Unity-2020.3.41f1-black.svg?logo=unity&logoColor=white.svg)
+![Generic badge](https://img.shields.io/badge/Unity-2023.3.31f1-black.svg?logo=unity&logoColor=white.svg)
 
 ## <a id="plugin-build-for">Built-in Airbridge Unity SDK Version
-![Generic badge](https://img.shields.io/badge/Airbridge_Unity_SDK-1.14.1-blue.svg)
+![Generic badge](https://img.shields.io/badge/Airbridge_Unity_SDK-1.16.4-blue.svg)
 
 ## Before you start
 

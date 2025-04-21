@@ -46,14 +46,20 @@ public class AirbridgeEventParser {
         if (object.has(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES)) {
             Object value = object.get(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES);
             if (value instanceof JSONObject) {
-                toReturn.setCustomAttributes(toMap((JSONObject) value));
+                JSONObject jsonObject = (JSONObject) value;
+                if (jsonObject.length() != 0) {
+                    toReturn.setCustomAttributes(toMap(jsonObject));
+                }
             }
         }
 
         if (object.has(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES)) {
             Object value = object.get(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES);
             if (value instanceof JSONObject) {
-                toReturn.setSemanticAttributes(toMap((JSONObject) value));
+                JSONObject jsonObject = (JSONObject) value;
+                if (jsonObject.length() != 0) {
+                    toReturn.setSemanticAttributes(toMap(jsonObject));
+                }
             }
         }
 
@@ -90,22 +96,3 @@ public class AirbridgeEventParser {
         return toReturn;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

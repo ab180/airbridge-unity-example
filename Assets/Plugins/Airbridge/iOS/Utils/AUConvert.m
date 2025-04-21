@@ -14,6 +14,16 @@
 
 + (nullable NSDictionary*) dictionaryFromJSONChars:(nullable const char*)jsonChars {
     NSString* string = [AUConvert stringFromChars:jsonChars];
+    NSDictionary* dictionary = [AUConvert dictionaryFromString:string];
+    
+    if (dictionary == nil || ![dictionary isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    
+    return dictionary;
+}
+
++ (nullable NSDictionary*)dictionaryFromString:(NSString *)string {
     if (string == nil) {
         return nil;
     }
@@ -33,6 +43,31 @@
     }
     
     return dictionary;
+}
+
++ (NSString *)stringFromDictionary:(NSDictionary *)dictionary {
+    NSData *data = [NSJSONSerialization
+     dataWithJSONObject:dictionary
+     options:NSJSONWritingFragmentsAllowed
+     error:nil
+    ];
+    
+    if (data == nil) { return nil; }
+    
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
++ (const char *)jsonCharsFromDictionary:(NSDictionary *)dictionary {
+    NSData *data = [NSJSONSerialization
+     dataWithJSONObject:dictionary
+     options:NSJSONWritingFragmentsAllowed
+     error:nil
+    ];
+    
+    if (data == nil) { return nil; }
+    
+    NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    return [AUConvert charsFromString:dataString];
 }
 
 + (nullable NSArray*) arrayFromJSONChars:(nullable const char*)jsonChars {
@@ -66,6 +101,17 @@
     NSString* string = [NSString stringWithUTF8String:chars];
     
     return string;
+}
+
++ (const char *)charsFromString:(NSString *)string {
+    const char * cString;
+    if (string == nil) { cString = @"".UTF8String; }
+    else { cString = string.UTF8String; }
+
+    char* copy = (char*)malloc(strlen(cString) + 1);
+    strcpy(copy, cString);
+
+    return copy;
 }
 
 @end

@@ -49,4 +49,12 @@ namespace Airbridge.Constants
         public const string SCHEDULE                      = "airbridge.schedule";
         public const string SPEND_CREDITS                 = "airbridge.spendCredits";
     }
+    
+    public static class IAP
+    {
+        public const string ACTION              = "action";
+        public const string LABEL               = "label";
+        public const string CUSTOM_ATTRIBUTES   = "customAttributes";
+        public const string SEMANTIC_ATTRIBUTES = "semanticAttributes";
+    }
 }

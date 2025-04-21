@@ -3,118 +3,130 @@ package co.ab180.airbridge.unity;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import co.ab180.airbridge.Airbridge;
 import co.ab180.airbridge.AirbridgeConfig;
+import co.ab180.airbridge.AirbridgeInAppPurchase;
+import co.ab180.airbridge.AirbridgeInAppPurchaseEnvironment;
 import co.ab180.airbridge.OnAttributionResultReceiveListener;
+import co.ab180.airbridge.OnInAppPurchaseReceiveListener;
 
 public class AirbridgeContentProvider extends ContentProvider {
-
-    private static final String META_DATA_PREFIX = "airbridge==";
-    
-    private static final String META_DATA_APP_NAME = "co.ab180.airbridge.sdk.app_name";
-    private static final String META_DATA_APP_TOKEN = "co.ab180.airbridge.sdk.app_token";
-    private static final String META_DATA_SDK_SIGNATURE_SECRET_ID = "co.ab180.airbridge.sdk.sdk_signature_secret_id";
-    private static final String META_DATA_SDK_SIGNATURE_SECRET = "co.ab180.airbridge.sdk.sdk_signature_secret";
-    private static final String META_DATA_LOG_LEVEL = "co.ab180.airbridge.sdk.log_level";
-    private static final String META_DATA_CUSTOM_DOMAIN = "co.ab180.airbridge.sdk.custom_domain";
-    private static final String META_DATA_SESSION_TIMEOUT_SECONDS = "co.ab180.airbridge.sdk.session_timeout_seconds";
-    private static final String META_DATA_USER_INFO_HASH_ENABLED = "co.ab180.airbridge.sdk.user_info_hash_enabled";
-    private static final String META_DATA_LOCATION_COLLECTION_ENABLED = "co.ab180.airbridge.sdk.location_collection_enabled";
-    private static final String META_DATA_TRACK_AIRBRIDGE_LINK_ONLY = "co.ab180.airbridge.sdk.track_airbridge_link_only";
-    private static final String META_DATA_AUTO_START_TRACKING_ENABLED = "co.ab180.airbridge.sdk.auto_start_tracking_enabled";
-    private static final String META_DATA_FACEBOOK_DEFERRED_APP_LINK_ENABLED = "co.ab180.airbridge.sdk.facebook_deferred_app_link_enabled";
 
     @Override
     public boolean onCreate() {
         try {
             Application app = (Application) Objects.requireNonNull(getContext()).getApplicationContext();
-            PackageManager pm = app.getPackageManager();
-            ApplicationInfo appInfo = pm.getApplicationInfo(app.getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = appInfo.metaData;
 
-            String appName = getActualString(bundle.getString(META_DATA_APP_NAME), META_DATA_PREFIX);
-            String appToken = getActualString(bundle.getString(META_DATA_APP_TOKEN), META_DATA_PREFIX);
-
-            AirbridgeConfig.Builder builder = new AirbridgeConfig.Builder(appName, appToken);
+            AirbridgeConfig.Builder builder = new AirbridgeConfig.Builder(AirbridgeSettings.appName, AirbridgeSettings.appToken);
             builder.setPlatform("unity");
-            
-             if (bundle.containsKey(META_DATA_SDK_SIGNATURE_SECRET_ID) && bundle.containsKey(META_DATA_SDK_SIGNATURE_SECRET)) {
-                 String sdkSignatureSecret = getActualString(bundle.getString(META_DATA_SDK_SIGNATURE_SECRET_ID, ""), META_DATA_PREFIX);
-                 String sdkSignatureSecretID = getActualString(bundle.getString(META_DATA_SDK_SIGNATURE_SECRET, ""), META_DATA_PREFIX);
-                 if (!sdkSignatureSecret.isEmpty() && !sdkSignatureSecretID.isEmpty()) {
-                    builder.setSDKSignatureSecret(sdkSignatureSecret, sdkSignatureSecretID);
-                 }
-             }
-             
-            if (bundle.containsKey(META_DATA_LOG_LEVEL)) {
-                int logLevel = bundle.getInt(META_DATA_LOG_LEVEL, 5);
-                builder.setLogLevel(logLevel);
+
+            if (isNotEmpty(AirbridgeSettings.sdkSignatureSecretID) && isNotEmpty(AirbridgeSettings.sdkSignatureSecret)) {
+                builder.setSDKSignatureSecret(AirbridgeSettings.sdkSignatureSecretID, AirbridgeSettings.sdkSignatureSecret);
             }
 
-            if (bundle.containsKey(META_DATA_CUSTOM_DOMAIN)) {
-                String customDomain = bundle.getString(META_DATA_CUSTOM_DOMAIN, "");
-                if (!customDomain.isEmpty()) {
-                    List<String> customDomains = new ArrayList<>();
-                    customDomains.add(customDomain);
-                    builder.setCustomDomains(customDomains);
-                }
+            builder.setLogLevel(AirbridgeSettings.logLevel);
+
+            String customDomain = AirbridgeSettings.customDomain;
+            if (isNotEmpty(customDomain)) {
+                List<String> customDomains = new ArrayList<>();
+                customDomains.add(customDomain);
+                builder.setCustomDomains(customDomains);
             }
 
-            if (bundle.containsKey(META_DATA_SESSION_TIMEOUT_SECONDS)) {
-                long seconds = bundle.getInt(META_DATA_SESSION_TIMEOUT_SECONDS, 300);
-                builder.setSessionTimeoutSeconds(seconds);
-            }
-
-            if (bundle.containsKey(META_DATA_USER_INFO_HASH_ENABLED)) {
-                boolean enabled = bundle.getBoolean(META_DATA_USER_INFO_HASH_ENABLED, true);
-                builder.setUserInfoHashEnabled(enabled);
-            }
-
-            if (bundle.containsKey(META_DATA_LOCATION_COLLECTION_ENABLED)) {
-                boolean enabled = bundle.getBoolean(META_DATA_LOCATION_COLLECTION_ENABLED, false);
-                builder.setLocationCollectionEnabled(enabled);
-            }
-
-            if (bundle.containsKey(META_DATA_TRACK_AIRBRIDGE_LINK_ONLY)) {
-                boolean enabled = bundle.getBoolean(META_DATA_TRACK_AIRBRIDGE_LINK_ONLY, false);
-                builder.setTrackAirbridgeLinkOnly(enabled);
-            }
-
-            if (bundle.containsKey(META_DATA_AUTO_START_TRACKING_ENABLED)) {
-                boolean enabled = bundle.getBoolean(META_DATA_AUTO_START_TRACKING_ENABLED, true);
-                builder.setAutoStartTrackingEnabled(enabled);
-                AirbridgeUnity.setAutoStartTrackingEnabled(enabled);
-            }
-
-            if (bundle.containsKey(META_DATA_FACEBOOK_DEFERRED_APP_LINK_ENABLED)) {
-                boolean enabled = bundle.getBoolean(META_DATA_FACEBOOK_DEFERRED_APP_LINK_ENABLED, false);
-                builder.setFacebookDeferredAppLinkEnabled(enabled);
-            }
+            builder.setSessionTimeoutSeconds(AirbridgeSettings.sessionTimeoutSeconds);
+            builder.setUserInfoHashEnabled(AirbridgeSettings.userInfoHashEnabled);
+            builder.setLocationCollectionEnabled(AirbridgeSettings.locationCollectionEnabled);
+            builder.setTrackAirbridgeLinkOnly(AirbridgeSettings.trackAirbridgeLinkOnly);
+            builder.setAutoStartTrackingEnabled(AirbridgeSettings.autoStartTrackingEnabled);
+            builder.setFacebookDeferredAppLinkEnabled(AirbridgeSettings.facebookDeferredAppLinkEnabled);
 
             builder.setOnAttributionResultReceiveListener(new OnAttributionResultReceiveListener() {
-            	@Override
-            	public void onAttributionResultReceived(Map<String, String> result) {
-            		AirbridgeUnity.processAttributionData(result);  
-            	}
+                @Override
+                public void onAttributionResultReceived(Map<String, String> result) {
+                    AirbridgeUnity.processAttributionData(result);
+                }
+            });
+
+            String facebookAppId = AirbridgeSettings.facebookAppId;
+            if (isNotEmpty(facebookAppId)) {
+                builder.setMetaInstallReferrer(facebookAppId);
+            }
+
+            builder.setInAppPurchaseEnvironment(
+                    AirbridgeSettings.inAppPurchaseEnvironment.equals(AirbridgeInAppPurchaseEnvironment.SANDBOX.getValue$airbridge_release()) ?
+                            AirbridgeInAppPurchaseEnvironment.SANDBOX :
+                            AirbridgeInAppPurchaseEnvironment.PRODUCTION
+            );
+            builder.setOnInAppPurchaseReceived(new OnInAppPurchaseReceiveListener() {
+                @Override
+                public void onInAppPurchaseReceived(@NotNull AirbridgeInAppPurchase airbridgeInAppPurchase) {
+                    if (AirbridgeUnity.inAppPurchaseCallback == null) return;
+
+                    // Use reflection so that it can be used even if the billing client library is not implemented.
+                    String originalJson = "{}";
+                    try {
+                        Class<?> airbridgeInAppPurchaseClass = Class.forName("co.ab180.airbridge.AirbridgeInAppPurchase");
+                        Method getPurchaseMethod = airbridgeInAppPurchaseClass.getMethod("getPurchase");
+                        Object purchase = getPurchaseMethod.invoke(airbridgeInAppPurchase);
+
+                        Class<?> purchaseClass = Class.forName("com.android.billingclient.api.Purchase");
+                        Method getOriginalJsonMethod = purchaseClass.getMethod("getOriginalJson");
+                        originalJson = (String) getOriginalJsonMethod.invoke(purchase);
+                    } catch (Throwable throwable) {
+                        Log.e("AirbridgeUnity", "Error occurs while getting purchase using reflection", throwable);
+                    }
+
+                    try {
+                        String result = AirbridgeUnity.inAppPurchaseCallback.Invoke(originalJson);
+                        HashMap<String, Object> resultMap = new HashMap<>(Objects.requireNonNull(AirbridgeJsonParser.from(result)));
+
+                        // Set Action
+                        if (resultMap.containsKey(AirbridgeConstants.Param.ACTION) &&
+                                resultMap.get(AirbridgeConstants.Param.ACTION) instanceof String) {
+                            airbridgeInAppPurchase.setAction((String) resultMap.get(AirbridgeConstants.Param.ACTION));
+                        }
+                        // Set Label
+                        if (resultMap.containsKey(AirbridgeConstants.Param.LABEL) &&
+                                resultMap.get(AirbridgeConstants.Param.LABEL) instanceof String) {
+                            airbridgeInAppPurchase.setLabel((String) resultMap.get(AirbridgeConstants.Param.LABEL));
+                        }
+                        // Set Custom Attributes
+                        if (resultMap.containsKey(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES) &&
+                                (resultMap.get(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES) instanceof Map)) {
+                            airbridgeInAppPurchase.setCustomAttributes(
+                                    ((Map<String, Object>) resultMap.get(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES))
+                            );
+                        }
+                        // Set Semantic Attributes
+                        if (resultMap.containsKey(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES) &&
+                                (resultMap.get(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES) instanceof Map)) {
+                            airbridgeInAppPurchase.setSemanticAttributes(
+                                    ((Map<String, Object>) resultMap.get(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES))
+                            );
+                        }
+                    } catch (Throwable throwable) {
+                        Log.e("AirbridgeUnity", "Error occurs while calling {onInAppPurchaseReceived}", throwable);
+                    }
+                }
             });
 
             Airbridge.init(app, builder.build());
         } catch (Throwable throwable) {
-            Log.e("Airbridge Unity", "Couldn't initialize SDK", throwable);
+            // Enable error logs to be collected to the server
+            Log.e("Airbridge", "[Airbridge Unity] Couldn't initialize SDK.", throwable);
         }
         return true;
     }
@@ -143,19 +155,9 @@ public class AirbridgeContentProvider extends ContentProvider {
     public int update(@NotNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
     }
-    
-    /**
-     * Fixes an issue where a string cannot be found when it consists of only numbers.
-     * @param str [prefix][actual string]
-     * @return [actual string]
-     */
-    private String getActualString(String str, String prefix) {
-        if (str != null && prefix != null) {
-            int index = str.indexOf(prefix);
-            if (index == 0) {
-                return str.substring(index + prefix.length());
-            }
-        }
-        return str;
+
+    private boolean isNotEmpty(String string) {
+        if (string == null) { return false; }
+        return !(string.isEmpty());
     }
 }

@@ -73,7 +73,7 @@ namespace Airbridge.Ecommerce
             return data;
         }
 
-        private void AddData(string key, object value)
+        public void AddData(string key, object value)
         {
             if (!data.ContainsKey(key))
             {

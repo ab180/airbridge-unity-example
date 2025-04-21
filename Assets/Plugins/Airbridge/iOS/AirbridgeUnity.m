@@ -66,8 +66,16 @@ static AirbridgeUnity* instance;
     AirBridge.autoStartTrackingEnabled = enable;
 }
 
++ (bool)isSDKEnabled {
+    return [AirBridge isSDKEnabled];
+}
+
 + (void)startTracking {
     [AirBridge startTracking];
+}
+
++ (void)stopTracking {
+    [AirBridge stopTracking];
 }
 
 + (void) registerPushToken:(NSData*)pushToken {
@@ -107,6 +115,18 @@ static AirbridgeUnity* instance;
 
 + (void)setLogLevel:(NSUInteger)level {
     [AirBridge setLogLevel:(ABLogLevel)level];
+}
+
++ (void)startInAppPurchaseTracking {
+    [AirBridge startInAppPurchaseTracking];
+}
+
++ (void)stopInAppPurchaseTracking {
+    [AirBridge stopInAppPurchaseTracking];
+}
+
++ (void)setInAppPurchaseEnvironment:(NSString *)environmentString {
+     [[AirBridge setting] setInAppPurchaseEnvironment:environmentString];
 }
 
 @end

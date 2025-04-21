@@ -73,3 +73,13 @@ crashlytics-build.properties
 
 # Rider
 .idea/
+
+.utmp/
+
+# Airbridge Configuration
+/[Aa]ssets/[Aa]irbridge/[Rr]esources
+/[Aa]ssets/[Aa]irbridge/[Rr]esources.meta
+/[Aa]ssets/[Pp]lugins/[Aa]irbridge/Android/java/co/ab180/airbridge/unity/AirbridgeSettings.java
+/[Aa]ssets/[Pp]lugins/[Aa]irbridge/Android/java/co/ab180/airbridge/unity/AirbridgeSettings.java.meta
+/[Aa]ssets/[Pp]lugins/[Aa]irbridge/iOS/Delegate/AUAppSetting.h
+/[Aa]ssets/[Pp]lugins/[Aa]irbridge/iOS/Delegate/AUAppSetting.h.meta
