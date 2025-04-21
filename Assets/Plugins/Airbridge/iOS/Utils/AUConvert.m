@@ -89,4 +89,9 @@
     return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 }
 
++ (nonnull const char *)charsFromDictionary:(nonnull NSDictionary *)dictionary {
+    NSString *string = [AUConvert stringFromDictionary:dictionary];
+    return [AUConvert charsFromString:string];
+}
+
 @end

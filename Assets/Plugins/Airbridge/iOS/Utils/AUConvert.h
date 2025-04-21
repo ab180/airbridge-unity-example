@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSString*) stringFromChars:(nullable const char*)chars;
 + (nullable NSString *)stringFromDictionary:(NSDictionary *)dictionary;
 + (const char *)charsFromString:(NSString *)string;
++ (const char *)charsFromDictionary:(NSDictionary *)dictionary;
 
 @end
 

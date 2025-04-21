@@ -49,6 +49,10 @@
     builder = [builder setEventBufferCountLimit:eventBufferCountLimitInGibibyte];
     builder = [builder setEventBufferSizeLimitWithGibibyte:eventBufferSizeLimitInGibibyte];
     builder = [builder setEventTransmitIntervalWithSecond:eventTransmitIntervalSeconds];
+    builder = [builder setOnInAppPurchaseReceived:^(AirbridgeInAppPurchase * _Nonnull inAppPurchase) {
+        if (self.inAppPurchaseOnReceived == nil) { return; }
+        self.inAppPurchaseOnReceived(inAppPurchase);
+    }];
     builder = [builder setOnAttributionReceived:^(NSDictionary<NSString *,NSString *> * dictionary) {
     if (self.attributionOnReceived == nil) { return; }
         self.attributionOnReceived([AUConvert stringFromDictionary:dictionary]);
@@ -60,7 +64,7 @@
     
     builder = [builder setSDKAttributes: @{
         @"wrapperName": @"airbridge-unity-sdk",
-        @"wrapperVersion": @"4.3.0"
+        @"wrapperVersion": @"4.4.0"
     }];
     
     builder = [builder setSDKWrapperOption: @{
@@ -68,6 +72,15 @@
     }];
     
     [Airbridge initializeSDKWithOption:[builder build]];
+    [Airbridge handleDeferredDeeplinkOnSuccess:^(NSURL * _Nullable deeplinkURL) {
+        if (AirbridgeUnity.sharedInstance.deeplinkOnReceived == nil) { 
+             AirbridgeUnity.sharedInstance.initializeBeforeDeeplinkString = deeplinkURL.absoluteString;
+             return; 
+        }
+        else { 
+            AirbridgeUnity.sharedInstance.deeplinkOnReceived(deeplinkURL.absoluteString);
+        }
+    }];
 }
 
 @end

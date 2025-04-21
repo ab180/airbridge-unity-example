@@ -90,6 +90,15 @@ internal interface IAirbridgePlugin
     void HandleWebInterfaceCommand(string command);
 
     #endregion
+    
+    #region IAP
+    
+    void StartInAppPurchaseTracking();
+    void StopInAppPurchaseTracking();
+    bool IsInAppPurchaseTrackingEnabled();
+    void SetOnInAppPurchaseReceived(OnAirbridgeInAppPurchaseReceiveListener onReceived);
+
+    #endregion
 }
 // ReSharper disable once InvalidXmlDocComment
 /// @endcond

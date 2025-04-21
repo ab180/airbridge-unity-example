@@ -74,5 +74,9 @@ crashlytics-build.properties
 # Rider
 .idea/
 
-# Airbridge
-Assets/Airbridge/Resources/*
+# Airbridge Configuration
+/[Aa]ssets/[Aa]irbridge/[Rr]esources
+/[Aa]ssets/[Aa]irbridge/[Rr]esources.meta
+
+/[Aa]ssets/[Pp]lugins/[Aa]ndroid/[Aa]irbridge
+/[Aa]ssets/[Pp]lugins/[Aa]ndroid/[Aa]irbridge.meta

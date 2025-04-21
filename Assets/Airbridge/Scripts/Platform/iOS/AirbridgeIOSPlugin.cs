@@ -431,6 +431,48 @@ internal class AirbridgeIOSPlugin : IAirbridgePlugin
         ); 
     }
     #endregion
+    
+    [DllImport("__Internal")] private static extern void native_startInAppPurchaseTracking();
+    public void StartInAppPurchaseTracking()
+    {
+        native_startInAppPurchaseTracking();
+    }
+
+    [DllImport("__Internal")] private static extern void native_stopInAppPurchaseTracking();
+    public void StopInAppPurchaseTracking()
+    {
+        native_stopInAppPurchaseTracking();
+    }
+    
+    [DllImport("__Internal")] private static extern bool native_isInAppPurchaseTrackingEnabled();
+    public bool IsInAppPurchaseTrackingEnabled()
+    {
+        return native_isInAppPurchaseTrackingEnabled();
+    }
+    
+    [DllImport("__Internal")] private static extern void native_setOnInAppPurchaseReceived(
+        Func<string, string> onReceived
+    );
+    
+    private static OnAirbridgeInAppPurchaseReceiveListener _setOnInAppPurchaseReceived;
+    [MonoPInvokeCallback(typeof(Action<Dictionary<string, object>>))]
+    private static string SetOnInAppPurchaseReceived(string onReceivedString)
+    {
+        if (string.IsNullOrWhiteSpace(onReceivedString)) return null;
+
+        var inAppPurchase = new AirbridgeInAppPurchase(
+            AirbridgeJson.Deserialize(onReceivedString) as Dictionary<string, object>
+        );
+            
+        _setOnInAppPurchaseReceived?.Invoke(ref inAppPurchase);
+        return AirbridgeJson.Serialize(inAppPurchase.ToDictionary());
+    }
+
+    public void SetOnInAppPurchaseReceived(OnAirbridgeInAppPurchaseReceiveListener onReceived)
+    {
+        _setOnInAppPurchaseReceived = onReceived;
+        native_setOnInAppPurchaseReceived(SetOnInAppPurchaseReceived);
+    }
 }
 
 #endif

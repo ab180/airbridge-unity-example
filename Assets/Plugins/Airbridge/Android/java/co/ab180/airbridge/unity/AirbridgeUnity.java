@@ -26,6 +26,8 @@ public class AirbridgeUnity {
     private static String receivedAttributionResult = null;
     private static AirbridgeCallback attributionResultCallback = null;
 
+    static AirbridgeCallbackWithReturn inAppPurchaseCallback = null;
+
     static AirbridgeLifecycleIntegration airbridgeLifecycleIntegration = null;
 
     public static void enableSDK() {
@@ -53,6 +55,31 @@ public class AirbridgeUnity {
         return false;
     }
 
+    public static void startInAppPurchaseTracking() {
+        try {
+            Airbridge.startInAppPurchaseTracking();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {startInAppPurchaseTracking}", throwable);
+        }
+    }
+
+    public static void stopInAppPurchaseTracking() {
+        try {
+            Airbridge.stopInAppPurchaseTracking();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {stopInAppPurchaseTracking}", throwable);
+        }
+    }
+
+    public static boolean isInAppPurchaseTrackingEnabled() {
+        try {
+            return Airbridge.isInAppPurchaseTrackingEnabled();
+        } catch (Throwable throwable) {
+            Log.e(TAG, "Error occurs while calling {isInAppPurchaseTrackingEnabled}", throwable);
+        }
+        return false;
+    }
+    
     public static void startTracking() {
         try {
             Airbridge.startTracking();
@@ -371,6 +398,14 @@ public class AirbridgeUnity {
             );
         } catch (Throwable throwable) {
             Log.e(TAG, "Error occurs while calling {createTrackingLink}", throwable);
+        }
+    }
+    
+    public static void setOnInAppPurchaseReceived(AirbridgeCallbackWithReturn onInAppPurchaseReceived) {
+        if (inAppPurchaseCallback == null) {
+            inAppPurchaseCallback = onInAppPurchaseReceived;
+        } else {
+            Log.w(TAG, "Already called {setOnInAppPurchaseReceived}");
         }
     }
 

@@ -493,6 +493,68 @@ public class Airbridge
     }
 
     #endregion
+    
+    #region IAP
+    
+    /// <summary>
+    /// Start collecting and transferring purchases events.
+    /// </summary>
+    public static void StartInAppPurchaseTracking()
+    {
+        AirbridgePlugin.StartInAppPurchaseTracking();
+    }
+    
+    /// <summary>
+    /// Stop collecting and transferring purchases events.
+    /// </summary>
+    public static void StopInAppPurchaseTracking()
+    {
+        AirbridgePlugin.StopInAppPurchaseTracking();
+    }
+    
+    /// <summary>
+    /// Checks whether the SDK is currently enabled for in-app purchase tracking.
+    /// </summary>
+    /// <returns> `true` if the SDK is enabled for in-app purchase tracking, `false` otherwise.</returns>
+    public static bool IsInAppPurchaseTrackingEnabled()
+    {
+        return AirbridgePlugin.IsInAppPurchaseTrackingEnabled();
+    }
+
+    /// <summary>
+    /// Sets a listener for receiving in-app purchase data.
+    /// </summary>
+    /// <param name="onReceived"> The listener to be set.</param>
+    /// <example>
+    /// **Example usage**
+    /// @code
+    /// Airbridge.SetOnInAppPurchaseReceived((ref AirbridgeInAppPurchase inAppPurchase) =>
+    /// {
+    /// #if UNITY_IOS
+    ///     Debug.Log(DictionaryToString(inAppPurchase.Transaction));
+    /// #elif UNITY_ANDROID
+    ///     Debug.Log(DictionaryToString(inAppPurchase.Purchase));
+    /// #endif
+    ///     inAppPurchase.SetSemanticAttributes(new Dictionary&lt;string, object&gt;()
+    ///     {
+    ///         { "key", "value" }
+    ///     });
+    ///     inAppPurchase.SetCustomAttributes(new Dictionary&lt;string, object&gt;()
+    ///     {
+    ///         { "key", "value" }
+    ///     });
+    /// });
+    /// @endcode
+    /// </example>
+    public static void SetOnInAppPurchaseReceived(OnAirbridgeInAppPurchaseReceiveListener onReceived)
+    {
+        AirbridgeNullCheck.CallMethodWithNullCheck(() =>
+        {
+            AirbridgePlugin.SetOnInAppPurchaseReceived(AirbridgeNullCheck.RequireNonNull(onReceived));
+        });
+    }
+
+    #endregion
 
     /// <summary>
     /// Indicates whether notification was sent by %Airbridge to track uninstall of app.

@@ -16,4 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 void native_HandleWebInterfaceCommand(const char* command);
 const char * native_CreateWebInterfaceScript(const char* webToken, const char* postMessageScript);
 
+void native_startInAppPurchaseTracking();
+void native_stopInAppPurchaseTracking();
+bool native_isInAppPurchaseTrackingEnabled();
+void native_setOnInAppPurchaseReceived(UnityInAppPurchaseOnReceived onReceived);
+
 NS_ASSUME_NONNULL_END

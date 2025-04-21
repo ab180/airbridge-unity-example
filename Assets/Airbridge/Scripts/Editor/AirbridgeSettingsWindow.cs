@@ -98,6 +98,16 @@ class AirbridgeSettingsWindow : EditorWindow
         SerializedProperty isHandleAirbridgeDeeplinkOnlyProperty = serializedAirbridgeData.FindProperty("isHandleAirbridgeDeeplinkOnly");
         EditorGUILayout.PropertyField(isHandleAirbridgeDeeplinkOnlyProperty, new GUIContent("Is Handle Airbridge Deeplink Only"), new GUILayoutOption[] { });
         
+        SerializedProperty inAppPurchaseEnvironment = serializedAirbridgeData.FindProperty("inAppPurchaseEnvironment");
+        inAppPurchaseEnvironment.intValue = EditorGUILayout.Popup(
+            label: "In-App Purchase Environment",
+            selectedIndex: inAppPurchaseEnvironment.intValue,
+            displayedOptions: AirbridgeInAppPurchaseEnvironmentExtension.Environments
+        );
+        
+        SerializedProperty collectTCFDataEnabledProperty = serializedAirbridgeData.FindProperty("collectTCFDataEnabled");
+        EditorGUILayout.PropertyField(collectTCFDataEnabledProperty, new GUILayoutOption[] { });
+        
         EditorGUILayout.Space();
 
         if (GUI.changed)
@@ -294,6 +304,8 @@ class AirbridgeSettingsWindow : EditorWindow
                 + "public static long eventTransmitIntervalSeconds = " + AirbridgeData.GetInstance().eventTransmitIntervalSeconds + ";\n"
                 + "public static String facebookAppId = \"" + AirbridgeData.GetInstance().facebookAppId + "\";\n"
                 + "public static boolean isHandleAirbridgeDeeplinkOnly = " + AirbridgeData.GetInstance().isHandleAirbridgeDeeplinkOnly.ToString().ToLower() + ";\n"
+                + "public static String inAppPurchaseEnvironment = \"" + AirbridgeData.GetInstance().inAppPurchaseEnvironment.GetStringValue() + "\";\n"
+                + "public static boolean collectTCFDataEnabled = " + AirbridgeData.GetInstance().collectTCFDataEnabled.ToString().ToLower() + ";\n"
                 + "\n"
                 + "}\n";
 
@@ -345,6 +357,8 @@ class AirbridgeSettingsWindow : EditorWindow
                 + "static NSInteger eventBufferSizeLimitInGibibyte = " + AirbridgeData.GetInstance().eventMaximumBufferSize + ";\n"
                 + "static NSInteger eventTransmitIntervalSeconds = " + AirbridgeData.GetInstance().eventTransmitIntervalSeconds + ";\n"
                 + "static BOOL isHandleAirbridgeDeeplinkOnly = " + AirbridgeData.GetInstance().isHandleAirbridgeDeeplinkOnly.ToString().ToLower() + ";\n"
+                + "static NSString* inAppPurchaseEnvironment = @\"" + AirbridgeData.GetInstance().inAppPurchaseEnvironment.GetStringValue() + "\";\n"
+                + "static BOOL collectTCFDataEnabled = " + AirbridgeData.GetInstance().collectTCFDataEnabled.ToString().ToLower() + ";\n"
                 + "\n"
                 + "#endif\n";
             

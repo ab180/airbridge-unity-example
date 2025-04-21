@@ -25,3 +25,4 @@ void native_setOnDeeplinkReceived(UnityDeeplinkReceived onReceived) {
         onReceived([urlString UTF8String]);
     }];
 }
+

@@ -299,6 +299,45 @@ class AirbridgeAndroidPlugin : IAirbridgePlugin
     }
 
     #endregion
+    
+    #region IAP
+    
+    public void StartInAppPurchaseTracking()
+    {
+        airbridge.CallStatic("startInAppPurchaseTracking");
+    }
+
+    public void StopInAppPurchaseTracking()
+    {
+        airbridge.CallStatic("stopInAppPurchaseTracking");
+    }
+    
+    public bool IsInAppPurchaseTrackingEnabled()
+    {
+        return airbridge.CallStatic<bool>("isInAppPurchaseTrackingEnabled");
+    }
+
+    public void SetOnInAppPurchaseReceived(OnAirbridgeInAppPurchaseReceiveListener onReceived)
+    {
+        airbridge.CallStatic("setOnInAppPurchaseReceived", new AirbridgeCallbackWithReturnAndroidBridge(jsonString =>
+        {
+            try
+            {
+                AirbridgeInAppPurchase purchase =
+                    new AirbridgeInAppPurchase(AirbridgeJson.Deserialize(jsonString) as Dictionary<string, object>);
+                onReceived.Invoke(ref purchase);
+                Dictionary<string, object> result = purchase.ToDictionary();
+                return AirbridgeJson.Serialize(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Log("[Airbridge][SetOnInAppPurchaseReceived] Exception:\n" + e.StackTrace);
+            }
+            return jsonString;
+        }));
+    }
+    
+    #endregion
 }
 
 #endif

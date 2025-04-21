@@ -126,6 +126,12 @@ class AirbridgeData : ScriptableObject
     /// <summary> When set to `true`, provide only %Airbridge deep links in the Airbridge#SetOnDeeplinkReceived callback</summary>
     public bool isHandleAirbridgeDeeplinkOnly = false;
     
+    /// <summary> Sets an in-app purchase environment.</summary>
+    public AirbridgeInAppPurchaseEnvironment inAppPurchaseEnvironment = AirbridgeInAppPurchaseEnvironment.Production;
+
+    /// <summary> When set to `true`, TCF(Transparency & Consent Framework) data will be collected automatically.</summary>
+    public bool collectTCFDataEnabled = false;
+    
     private void OnValidate()
     {
         sessionTimeoutSeconds = Math.Max(0, Math.Min(sessionTimeoutSeconds, (long)TimeSpan.FromDays(7).TotalSeconds));

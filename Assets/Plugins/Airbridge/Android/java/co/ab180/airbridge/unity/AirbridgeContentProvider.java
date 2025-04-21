@@ -15,9 +15,12 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import co.ab180.airbridge.Airbridge;
+import co.ab180.airbridge.AirbridgeInAppPurchase;
+import co.ab180.airbridge.AirbridgeInAppPurchaseEnvironment;
 import co.ab180.airbridge.AirbridgeLifecycleIntegration;
 import co.ab180.airbridge.AirbridgeLogLevel;
 import co.ab180.airbridge.AirbridgeOptionBuilder;
+import co.ab180.airbridge.OnInAppPurchaseReceiveListener;
 
 public class AirbridgeContentProvider extends ContentProvider {
 
@@ -52,12 +55,12 @@ public class AirbridgeContentProvider extends ContentProvider {
                     .setPauseEventTransmitOnBackgroundEnabled(AirbridgeSettings.pauseEventTransmitOnBackgroundEnabled)
                     .setClearEventBufferOnInitializeEnabled(AirbridgeSettings.clearEventBufferOnInitializeEnabled)
                     .setSDKEnabled(AirbridgeSettings.sdkEnabled);
-                   
+
             String appMarketIdentifier = AirbridgeSettings.appMarketIdentifier;
-            if (isNotEmpty(appMarketIdentifier)) { 
+            if (isNotEmpty(appMarketIdentifier)) {
                 builder.setAppMarketIdentifier(appMarketIdentifier);
             }
-                   
+
             builder
                     .setEventBufferCountLimit(AirbridgeSettings.eventBufferCountLimitInGibibyte)
                     .setEventBufferSizeLimit(AirbridgeSettings.eventBufferSizeLimitInGibibyte)
@@ -79,15 +82,51 @@ public class AirbridgeContentProvider extends ContentProvider {
                     return null;
                 }
             });
-            
+
             HashMap<String, String> sdkAttributes = new HashMap<>();
             sdkAttributes.put("wrapperName", "airbridge-unity-sdk");
-            sdkAttributes.put("wrapperVersion", "4.3.0");
+            sdkAttributes.put("wrapperVersion", "4.4.0");
             builder.setSDKAttributes(sdkAttributes);
-            
+
             HashMap<String, Object> sdkWrapperOption = new HashMap<>();
             sdkWrapperOption.put("isHandleAirbridgeDeeplinkOnly", AirbridgeSettings.isHandleAirbridgeDeeplinkOnly);
             builder.setSDKWrapperOption(sdkWrapperOption);
+
+            builder.setInAppPurchaseEnvironment(
+                    AirbridgeSettings.inAppPurchaseEnvironment.equals(AirbridgeInAppPurchaseEnvironment.SANDBOX.getValue$airbridge_release()) ?
+                            AirbridgeInAppPurchaseEnvironment.SANDBOX :
+                            AirbridgeInAppPurchaseEnvironment.PRODUCTION
+            );
+            builder.setOnInAppPurchaseReceived(new OnInAppPurchaseReceiveListener() {
+                @Override
+                public void onInAppPurchaseReceived(@NotNull AirbridgeInAppPurchase airbridgeInAppPurchase) {
+                    if (AirbridgeUnity.inAppPurchaseCallback == null) return;
+
+                    String originalJson = airbridgeInAppPurchase.getPurchase().getOriginalJson();
+
+                    try {
+                        String result = AirbridgeUnity.inAppPurchaseCallback.Invoke(originalJson);
+                        HashMap<String, Object> resultMap = new HashMap<>(Objects.requireNonNull(AirbridgeJsonParser.from(result)));
+
+                        // Set Custom Attributes
+                        if (resultMap.containsKey(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES)) {
+                            airbridgeInAppPurchase.setCustomAttributes(AirbridgeJsonUtils.safeConvertToMap(
+                                    resultMap.get(AirbridgeConstants.Param.CUSTOM_ATTRIBUTES)
+                            ));
+                        }
+                        // Set Semantic Attributes
+                        if (resultMap.containsKey(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES)) {
+                            airbridgeInAppPurchase.setSemanticAttributes(AirbridgeJsonUtils.safeConvertToMap(
+                                    resultMap.get(AirbridgeConstants.Param.SEMANTIC_ATTRIBUTES)
+                            ));
+                        }
+                    } catch (Throwable throwable) {
+                        Log.e(AirbridgeUnity.TAG, "Error occurs while calling {onInAppPurchaseReceived}", throwable);
+                    }
+                }
+            });
+            
+            builder.setCollectTCFDataEnabled(AirbridgeSettings.collectTCFDataEnabled);
             
             Airbridge.initializeSDK(app, builder.build());
         } catch (Throwable throwable) {
@@ -122,7 +161,9 @@ public class AirbridgeContentProvider extends ContentProvider {
     }
 
     private boolean isNotEmpty(String string) {
-        if (string == null) { return false; }
+        if (string == null) {
+            return false;
+        }
         return !(string.isEmpty());
     }
 }

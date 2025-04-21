@@ -74,6 +74,14 @@ class AirbridgeUnsupportedPlugin: IAirbridgePlugin
     public string CreateWebInterfaceScript(string webToken, string postMessageScript) { return UnsupportedPlatform(""); }
 
     public void HandleWebInterfaceCommand(string command) { UnsupportedPlatform(); }
+    
+    public void StartInAppPurchaseTracking() { UnsupportedPlatform(); }
+
+    public void StopInAppPurchaseTracking() { UnsupportedPlatform(); }
+    
+    public bool IsInAppPurchaseTrackingEnabled() { return UnsupportedPlatform(false); }
+
+    public void SetOnInAppPurchaseReceived(OnAirbridgeInAppPurchaseReceiveListener onReceived) { UnsupportedPlatform(); }
 
     private void UnsupportedPlatform()
     {

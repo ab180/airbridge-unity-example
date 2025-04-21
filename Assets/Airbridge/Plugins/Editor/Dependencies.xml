@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <dependencies>
     <androidPackages>
-        <androidPackage spec="io.airbridge:sdk-android:4.3.0">
+        <androidPackage spec="io.airbridge:sdk-android:4.4.1">
             <repositories>
                 <repository>https://sdk-download.airbridge.io/maven</repository>
             </repositories>
         </androidPackage>
     </androidPackages>
     <iosPods>
-        <iosPod name="airbridge-ios-sdk" version="4.3.0" addToAllTargets="true"/>
+        <iosPod name="airbridge-ios-sdk" version="4.4.2" addToAllTargets="true"/>
     </iosPods>
 </dependencies>

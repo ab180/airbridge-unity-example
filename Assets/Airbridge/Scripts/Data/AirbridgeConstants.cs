@@ -52,7 +52,6 @@ public static class AirbridgeAttribute
     public const string TOTAL_QUANTITY          = "totalQuantity";
     public const string QUERY                   = "query";
 
-    public const string ORIGINAL_CURRENCY                   = "originalCurrency";
     public const string PERIOD                              = "period";
     public const string IS_RENEWAL                          = "isRenewal";
     public const string RENEWAL_COUNT                       = "renewalCount";
@@ -60,7 +59,6 @@ public static class AirbridgeAttribute
     public const string TRANSACTION_PAIRED_EVENT_CATEGORY   = "transactionPairedEventCategory";
     public const string TRANSACTION_PAIRED_EVENT_TIMESTAMP  = "transactionPairedEventTimestamp";
     public const string CONTRIBUTION_MARGIN                 = "contributionMargin";
-    public const string ORIGINAL_CONTRIBUTION_MARGIN        = "originalContributionMargin";
     public const string LIST_ID                             = "listID";
     public const string RATE_ID                             = "rateID";
     public const string RATE                                = "rate";
